@@ -99,7 +99,7 @@ The back end has to supply the pieces below with these exact names.
 **`item_detail.html`**: `item`, `requested` (true if you already asked for
 it), `posted`.
 
-## Easy edits
+## Edits
 
 - **Colors:** the variables at the top of `shelf/static/shelf/styles.css`.
 - **Font:** Plus Jakarta Sans, loaded in `shelf/templates/shelf/base.html`.
