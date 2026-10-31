@@ -1,0 +1,25 @@
+{% load shelf_tags %}
+{% comment %}
+  What the seeker filled in on the request form. The matched view already
+  shows the agreed meetup spot, so it passes show_location=False.
+{% endcomment %}
+{% if handoff.needed_by or handoff.note or show_location and handoff.location %}
+  <div class="request-facts">
+    {% if handoff.needed_by or show_location and handoff.location %}
+      <dl class="detail-facts">
+        {% if handoff.needed_by %}
+          <div><dt>Needed by</dt><dd>{% icon "calendar" 14 %} {{ handoff.needed_by|nice_date }}</dd></div>
+        {% endif %}
+        {% if show_location and handoff.location %}
+          <div><dt>Preferred pickup</dt><dd>{% icon "map-pin" 14 %} {{ handoff.location }}</dd></div>
+        {% endif %}
+      </dl>
+    {% endif %}
+    {% if handoff.note %}
+      <div>
+        <span class="request-facts-label">Your note</span>
+        <p class="detail-desc">{{ handoff.note }}</p>
+      </div>
+    {% endif %}
+  </div>
+{% endif %}

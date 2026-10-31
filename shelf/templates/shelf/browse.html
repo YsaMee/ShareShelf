@@ -1,0 +1,61 @@
+{% extends "shelf/app.html" %}
+{% load shelf_tags %}
+{% block title %}Browse items · ShareShelf{% endblock %}
+
+{% block content %}
+  <div class="page">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">{{ profile.school }} community</p>
+        <h1>Browse items</h1>
+        <p class="muted">Supplies your classmates are sharing right now. Your own items are on your dashboard.</p>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <form class="search" method="get" role="search">
+        {% icon "search" 16 %}
+        <input type="search" name="q" placeholder="Search supplies, categories..." value="{{ query }}" aria-label="Search supplies" />
+        {% if category != "All" %}<input type="hidden" name="category" value="{{ category }}" />{% endif %}
+      </form>
+      <form class="chips" method="get">
+        {% if query %}<input type="hidden" name="q" value="{{ query }}" />{% endif %}
+        {% for c in categories %}
+          <button type="submit" name="category" value="{{ c }}" class="chip{% if c == category %} is-active{% endif %}"
+                  {% if c == category %}aria-pressed="true"{% else %}aria-pressed="false"{% endif %}>{{ c|short_category }}</button>
+        {% endfor %}
+      </form>
+    </div>
+
+    {% if not items %}
+      <div class="card empty">
+        <h3>Nobody is sharing that yet</h3>
+        <p class="muted">Post a request and we’ll let you know when a match shows up.</p>
+        <a class="btn btn-primary" href="?modal=request" data-open="request">{% icon "plus" 16 %} Request an item</a>
+      </div>
+    {% else %}
+      <div class="item-grid">
+        {% for item in items %}
+          <a class="card item-card" href="{% url 'item_detail' item.id %}">
+            <div class="item-card-top">
+              {% item_icon item %}
+              <span class="status status-green">Available</span>
+            </div>
+            <strong>{{ item.name }}</strong>
+            <span class="muted small">{{ item.category|short_category }} · {{ item.condition }}</span>
+            <div class="item-card-meta">
+              <span class="mini-avatar">{{ item.owner.profile.initials }}</span>
+              <span class="small">{{ item.owner.profile.name }}</span>
+              <span class="faint small">· {{ posted|lookup:item.id }}</span>
+            </div>
+            <span class="faint small item-card-loc">{% icon "map-pin" 12 %} {{ item.location }}</span>
+          </a>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}
+
+{% block modals %}
+  {% include "shelf/partials/request_modal.html" %}
+{% endblock %}

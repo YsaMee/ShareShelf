@@ -1,0 +1,83 @@
+{% load shelf_tags %}
+{% comment %}The seeker's "Request an item" popup. Opens from any [data-open="request"] button, or ?modal=request.{% endcomment %}
+<div class="modal-backdrop" data-modal="request" {% if open_modal != "request" %}hidden{% endif %}>
+  <div class="modal" style="max-width: 672px" role="dialog" aria-modal="true" aria-labelledby="request-title">
+    {% include "shelf/partials/modal_header.html" with title_id="request-title" eyebrow="Seeker" community=profile.school|add:" Community" title="Request an Item" subtitle="Ask fellow students for supplies you need this term." %}
+    <div class="modal-body">
+      <form class="form" method="post" action="{% url 'post_request' %}">
+        {% csrf_token %}
+        <label class="field">
+          <span class="field-label">Item Name / Title <em>*</em></span>
+          <span class="input-wrap has-icon">
+            {% icon "drafting-compass" 16 2 "input-icon" %}
+            <input class="input tinted" name="{{ request_form.name.html_name }}" id="{{ request_form.name.auto_id }}"
+                   placeholder="e.g. Drafting T-Square 24 inch" value="{{ request_form.name.value|default:'' }}" maxlength="80" required />
+          </span>
+          {% include "shelf/partials/field_error.html" with field=request_form.name %}
+        </label>
+
+        <label class="field">
+          <span class="field-label">Category <em>*</em></span>
+          {% include "shelf/partials/select.html" with field=request_form.category icon="shapes" %}
+        </label>
+
+        <label class="condition-card" data-condition>
+          {% icon "badge-check" 34 1.5 "condition-icon" %}
+          <div>
+            <div class="condition-title">
+              Condition Preference <span class="pill" data-condition-pill>{{ request_form.preference.value|default:"Flexible" }}</span>
+            </div>
+            {% for value, hint in condition_prefs %}
+              <span class="muted small" data-hint="{{ value }}"
+                    {% if value != request_form.preference.value|default:"Flexible" %}hidden{% endif %}>{{ hint }}</span>
+            {% endfor %}
+          </div>
+          <select name="{{ request_form.preference.html_name }}" aria-label="Condition preference">
+            {% for value, hint in condition_prefs %}
+              <option value="{{ value }}"{% if value == request_form.preference.value|default:"Flexible" %} selected{% endif %}>{{ value }}</option>
+            {% endfor %}
+          </select>
+          {% icon "chevron-down" 16 2 "condition-chevron" %}
+        </label>
+
+        <label class="field">
+          <span class="field-label-row">
+            <span class="field-label">How would this item help you? <span class="optional">(Optional)</span></span>
+            <span class="counter"><span data-count-for="{{ request_form.note.auto_id }}">{{ request_form.note.value|default:''|length }}</span> / {{ max_note }}</span>
+          </span>
+          <textarea class="input tinted" rows="3" maxlength="{{ max_note }}" name="{{ request_form.note.html_name }}" id="{{ request_form.note.auto_id }}"
+                    placeholder="e.g. Preparing for our midterm elevation drawings next week in AR-102. Can return right after.">{{ request_form.note.value|default:'' }}</textarea>
+        </label>
+
+        <div class="privacy-card">
+          <div class="privacy-icon">{% icon "lock" 14 %}</div>
+          <div>
+            <strong>Privacy Note</strong>
+            <span>Your note is only visible to classmates when they review your match request. Not published publicly on campus feeds.</span>
+          </div>
+        </div>
+
+        <div class="field-pair">
+          <label class="field">
+            <span class="field-label">Needed by Date <em>*</em></span>
+            <span class="input-wrap has-icon">
+              {% icon "calendar" 16 2 "input-icon" %}
+              <input class="input tinted" type="date" name="{{ request_form.needed_by.html_name }}"
+                     value="{{ request_form.needed_by.value|default:''|stringformat:'s' }}" required />
+            </span>
+            {% include "shelf/partials/field_error.html" with field=request_form.needed_by %}
+          </label>
+          <label class="field">
+            <span class="field-label">Preferred Pickup Location <em>*</em></span>
+            {% include "shelf/partials/select.html" with field=request_form.location icon="map-pin" %}
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <a class="btn btn-text" href="{{ request.path }}" data-close>Cancel</a>
+          <button type="submit" class="btn btn-primary">{% icon "send" 15 %} Post Request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

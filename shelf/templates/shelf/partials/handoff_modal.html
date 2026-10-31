@@ -1,0 +1,94 @@
+{% load shelf_tags %}
+{% comment %}
+  Details for one of your requests. Opens from ?request=<id>.
+  Open: lists the items Prolog matched, with "Ask for this".
+  Matched: who has it, where and when to meet, and "I got it".
+{% endcomment %}
+<div class="modal-backdrop" data-modal="handoff">
+  <div class="modal" style="max-width: 560px" role="dialog" aria-modal="true" aria-labelledby="handoff-title">
+    {% with subtitle=handoff.category|short_category|add:" · "|add:handoff.condition_label %}
+      {% include "shelf/partials/modal_header.html" with title_id="handoff-title" eyebrow=handoff.status_label title=handoff.name subtitle=subtitle close_href=dashboard_url %}
+    {% endwith %}
+    <div class="modal-body">
+      <div class="handoff">
+        {% if handoff.status == "matched" and handoff.meetup %}
+          {% with person=handoff.other_party meetup=handoff.meetup %}
+            <div class="person">
+              <div class="avatar">{{ person.initials }}</div>
+              <div>
+                <strong>{{ person.name }}</strong>
+                <span class="muted small">{{ person.program }}{% if person.program %} · {% endif %}has this item for you</span>
+              </div>
+            </div>
+            <ol class="steps">
+              <li class="is-done">{% icon "circle-check" 16 %} Matched with {{ person.first_name }}</li>
+              <li class="is-current">{% icon "clock" 16 %} Meet up: {{ meetup.label }}</li>
+              <li>{% icon "circle-check" 16 %} Confirm you got it</li>
+            </ol>
+            <div class="handoff-spot">
+              {% icon "map-pin" 16 %}
+              <div>
+                <strong>{{ meetup.location }}</strong>
+                <span class="muted small">{{ meetup.label }}</span>
+              </div>
+            </div>
+          {% endwith %}
+          {% include "shelf/partials/request_facts.html" with show_location=False %}
+          <div class="form-actions">
+            <form class="inline-form" method="post" action="{% url 'cancel_request' handoff.id %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-text btn-danger">Cancel request</button>
+            </form>
+            <button type="button" class="btn btn-ghost">{% icon "message-circle" 16 %} Message</button>
+            <form class="inline-form" method="post" action="{% url 'confirm_handoff' handoff.id %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-primary">{% icon "circle-check" 16 %} I got it</button>
+            </form>
+          </div>
+        {% else %}
+          <div class="handoff-status">
+            {% status_badge handoff.status_label pill=True %}
+            <span class="muted">
+              {% if handoff.status == "fulfilled" %}This one’s done. Hope it helped!
+              {% elif handoff.status == "cancelled" %}You cancelled this request.
+              {% elif handoff.status == "declined" %}{{ handoff.other_party.first_name|default:"The sharer" }} couldn’t lend this one.
+              {% elif handoff.status == "requested" %}Waiting for {{ handoff.other_party.first_name|default:"the sharer" }} to accept and set a pickup time.
+              {% elif handoff_matches %}These classmates have something that fits. Ask one of them.
+              {% else %}No match yet. It’ll show up here as soon as someone shares one.{% endif %}
+            </span>
+          </div>
+
+          {% if handoff.status == "open" and handoff_matches %}
+            <ul class="match-list">
+              {% for item in handoff_matches %}
+                <li class="match-row">
+                  {% item_icon item %}
+                  <div class="row-text">
+                    <strong>{{ item.name }}</strong>
+                    <span>{{ item.condition }} · {{ item.owner.profile.name }}</span>
+                    <span class="row-loc">{% icon "map-pin" 11 %} {{ item.location }}</span>
+                  </div>
+                  <form method="post" action="{% url 'ask_for_match' handoff.id item.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary btn-sm">{% icon "send" 14 %} Ask for this</button>
+                  </form>
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+
+          {% include "shelf/partials/request_facts.html" with show_location=True %}
+          <div class="form-actions">
+            {% if not handoff.is_closed %}
+              <form class="inline-form" method="post" action="{% url 'cancel_request' handoff.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-text btn-danger">Cancel request</button>
+              </form>
+            {% endif %}
+            <a class="btn btn-primary" href="{{ dashboard_url }}" data-close>OK</a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>

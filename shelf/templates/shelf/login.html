@@ -1,0 +1,95 @@
+{% extends "shelf/base.html" %}
+{% load static shelf_tags %}
+{% block title %}{% if mode == "signup" %}Create account{% else %}Log in{% endif %} · ShareShelf{% endblock %}
+{% block body %}
+  <div class="login">
+    <section class="login-hero">
+      <div class="hero-ring ring-1"></div>
+      <div class="hero-ring ring-2"></div>
+      <div class="hero-copy">
+        <p class="hero-eyebrow">Share more. Waste less.</p>
+        <h1>Every supply deserves a second story.</h1>
+        <p class="hero-lede">Connect with students at your school to share what you have and find what you need.</p>
+      </div>
+      <img class="hero-art" src="{% static 'shelf/shelf.png' %}" alt="" width="407" height="265" />
+      <div class="hero-footer">
+        <div class="hero-stats">
+          <div><strong>1,240+</strong><span>supplies shared</span></div>
+          <div><strong>680</strong><span>students helped</span></div>
+          <div><strong>24</strong><span>school communities</span></div>
+        </div>
+        <p class="hero-note">Built for students, powered by community.</p>
+      </div>
+    </section>
+
+    <section class="login-panel">
+      <form class="login-form" method="post" novalidate>
+        {% csrf_token %}
+        <nav class="segmented" aria-label="Log in or create account">
+          <a href="{% url 'login' %}" class="{% if mode == 'login' %}is-active{% endif %}" {% if mode == 'login' %}aria-current="page"{% endif %}>Log in</a>
+          <a href="{% url 'signup' %}" class="{% if mode == 'signup' %}is-active{% endif %}" {% if mode == 'signup' %}aria-current="page"{% endif %}>Create account</a>
+        </nav>
+
+        <div class="login-heading">
+          {% if mode == "signup" %}
+            <p class="eyebrow">Join ShareShelf</p>
+            <h2>Start sharing in a minute.</h2>
+            <p class="muted">Use your school email so classmates know it’s you.</p>
+          {% else %}
+            <p class="eyebrow">Welcome back</p>
+            <h2>Good to see you again.</h2>
+            <p class="muted">Log in to manage your shares and requests.</p>
+          {% endif %}
+        </div>
+
+        {% if form.non_field_errors %}<p class="form-error" role="alert">{{ form.non_field_errors.0 }}</p>{% endif %}
+
+        <div class="fields">
+          {% if mode == "signup" %}
+            <label class="field">
+              <span class="field-label">Full name</span>
+              <input class="input" name="name" placeholder="Raya Royo" value="{{ form.name.value|default:'' }}" maxlength="80" required />
+              {% include "shelf/partials/field_error.html" with field=form.name %}
+            </label>
+            <label class="field">
+              <span class="field-label">Program <span class="optional">(Optional)</span></span>
+              <input class="input" name="program" placeholder="BS Architecture" value="{{ form.program.value|default:'' }}" maxlength="80" />
+            </label>
+          {% endif %}
+          <label class="field">
+            <span class="field-label">School email</span>
+            <input class="input" type="email" name="email" placeholder="you@school.edu" value="{{ form.email.value|default:'' }}" required />
+            {% include "shelf/partials/field_error.html" with field=form.email %}
+          </label>
+          <label class="field">
+            <span class="field-label-row">
+              <span class="field-label">Password</span>
+              {% if mode == "login" %}<a class="link" href="#">Forgot password?</a>{% endif %}
+            </span>
+            <span class="input-wrap">
+              <input class="input" type="password" name="password" placeholder="••••••••" required data-password />
+              <button type="button" class="input-suffix" data-toggle-password aria-label="Show password" aria-pressed="false">
+                <span data-eye>{% icon "eye" 16 %}</span><span data-eye-off hidden>{% icon "eye-off" 16 %}</span>
+              </button>
+            </span>
+            {% include "shelf/partials/field_error.html" with field=form.password %}
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">
+          {% if mode == "signup" %}Create my account{% else %}Log in to ShareShelf{% endif %}
+          {% icon "arrow-right" 16 %}
+        </button>
+
+        <p class="switch-line">
+          {% if mode == "signup" %}
+            Already have an account? <a class="link" href="{% url 'login' %}">Log in</a>
+          {% else %}
+            New to ShareShelf? <a class="link" href="{% url 'signup' %}">Create an account</a>
+          {% endif %}
+        </p>
+        <p class="legal">By continuing, you agree to our <u>Terms</u> and <u>Privacy Policy</u>.</p>
+      </form>
+    </section>
+  </div>
+{% endblock %}

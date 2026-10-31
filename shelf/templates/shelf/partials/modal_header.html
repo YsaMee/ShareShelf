@@ -1,0 +1,19 @@
+{% load shelf_tags %}
+{% comment %}
+  Header for every popup. Pass: title_id, title, and optionally eyebrow, community,
+  subtitle. close_href is where the X goes without JavaScript.
+{% endcomment %}
+<div class="modal-accent"></div>
+<header class="modal-header">
+  <div>
+    {% if eyebrow or community %}
+      <div class="modal-eyebrow">
+        {% if eyebrow %}<span class="pill">{{ eyebrow }}</span>{% endif %}
+        {% if community %}<span class="modal-context"><span class="dot"></span>{{ community }}</span>{% endif %}
+      </div>
+    {% endif %}
+    <h2 id="{{ title_id }}">{{ title }}</h2>
+    {% if subtitle %}<p class="muted">{{ subtitle }}</p>{% endif %}
+  </div>
+  <a class="icon-button" href="{{ close_href|default:request.path }}" data-close aria-label="Close">{% icon "x" 18 %}</a>
+</header>

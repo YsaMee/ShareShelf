@@ -1,0 +1,35 @@
+{% load static shelf_tags %}
+{% url 'dashboard' as dashboard_url %}{% url 'browse' as browse_url %}
+<aside class="sidebar">
+  <a class="sidebar-brand" href="{{ dashboard_url }}">
+    <img src="{% static 'shelf/logo-mark.svg' %}" alt="" width="28" height="34" />
+    <span>ShareShelf</span>
+  </a>
+
+  <nav class="sidebar-nav">
+    <a class="nav-item {% if request.path == dashboard_url %}is-active{% endif %}" href="{{ dashboard_url }}"
+       {% if request.path == dashboard_url %}aria-current="page"{% endif %}>
+      {% icon "house" 18 1.75 %}<span>Overview</span>
+    </a>
+    <a class="nav-item {% if browse_url in request.path %}is-active{% endif %}" href="{{ browse_url }}"
+       {% if request.path == browse_url %}aria-current="page"{% endif %}>
+      {% icon "layout-grid" 18 1.75 %}<span>Browse items</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <button class="nav-item" type="button">{% icon "settings" 18 1.75 %}<span>Settings</span></button>
+    <form method="post" action="{% url 'logout' %}">
+      {% csrf_token %}
+      <button class="nav-item" type="submit">{% icon "log-out" 18 1.75 %}<span>Log out</span></button>
+    </form>
+    <div class="profile">
+      <div class="avatar">{{ profile.initials }}</div>
+      <div class="profile-text">
+        <strong>{{ profile.name }}</strong>
+        <span>{{ profile.school }}</span>
+      </div>
+      <button class="icon-button" type="button" aria-label="Profile menu">{% icon "ellipsis" 18 %}</button>
+    </div>
+  </div>
+</aside>
