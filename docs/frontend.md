@@ -1,9 +1,5 @@
 # ShareShelf front end
 
-Django templates, CSS and a little JavaScript for ShareShelf, built from the
-Figma design (figma.com/design/j73qrke8ATYj1qP05fQPft). Everything lives in a
-Django app folder called `shelf`, so it drops straight into the project:
-
 | Path | What it is |
 | --- | --- |
 | `shelf/templates/shelf/` | Pages: `login`, `dashboard`, `browse`, `item_detail`, plus `base` and `app` layouts |
