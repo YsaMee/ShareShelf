@@ -48,7 +48,7 @@
           {% if mode == "signup" %}
             <label class="field">
               <span class="field-label">Full name</span>
-              <input class="input" name="name" placeholder="John Paul Paraunda" value="{{ form.name.value|default:'' }}" maxlength="80" required />
+              <input class="input" name="name" placeholder="John Paraunda" value="{{ form.name.value|default:'' }}" maxlength="80" required />
               {% include "shelf/partials/field_error.html" with field=form.name %}
             </label>
             <label class="field">
