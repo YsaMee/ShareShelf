@@ -1,6 +1,6 @@
 # ShareShelf front end
 
-| Path | What it is |
+| Path | Function |
 | --- | --- |
 | `shelf/templates/shelf/` | Pages: `login`, `dashboard`, `browse`, `item_detail`, plus `base` and `app` layouts |
 | `shelf/templates/shelf/partials/` | Sidebar, the four popups, list rows, badges, toasts |
@@ -16,8 +16,7 @@ button is a normal form `POST`. `app.js` only makes it smoother.
 
 ## What the back end needs to provide
 
-The templates don't query anything themselves. The back end has to supply the
-pieces below with these exact names.
+The back end has to supply the pieces below with these exact names.
 
 ### Settings
 
@@ -29,7 +28,7 @@ pieces below with these exact names.
 
 ### URL names
 
-| Name | Method | Arguments | Used for |
+| Name | Method | Arguments | Function |
 | --- | --- | --- | --- |
 | `login`, `signup` | GET/POST | | Log in / create account |
 | `logout` | POST | | Log out |
@@ -100,7 +99,7 @@ pieces below with these exact names.
 **`item_detail.html`**: `item`, `requested` (true if you already asked for
 it), `posted`.
 
-## Easy edits
+## Edits
 
 - **Colors:** the variables at the top of `shelf/static/shelf/styles.css`.
 - **Font:** Plus Jakarta Sans, loaded in `shelf/templates/shelf/base.html`.
