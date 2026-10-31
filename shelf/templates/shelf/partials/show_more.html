@@ -1,0 +1,5 @@
+{% load shelf_tags %}
+<button type="button" class="link show-more" data-show-more="{{ target }}" aria-controls="{{ target }}" aria-expanded="false"
+        data-more-label="Show {{ hidden_count }} more">
+  <span data-label>Show {{ hidden_count }} more</span>{% icon "chevron-down" 14 %}
+</button>

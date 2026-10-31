@@ -1,0 +1,49 @@
+{% load shelf_tags %}
+{% comment %}A classmate asking for one of your items. Expects row, r (an IncomingRequest) and item.{% endcomment %}
+{% with person=r.other_party %}
+  <li class="incoming">
+    <div class="incoming-head">
+      <div class="mini-avatar">{{ person.initials }}</div>
+      <div class="incoming-text">
+        <span><strong>{{ person.name }}</strong> wants <strong>{{ item.name|default:r.name }}</strong></span>
+        <span class="faint small">{{ person.program }}{% if person.program %} · {% endif %}{{ row.posted }}</span>
+      </div>
+      {% status_badge r.status_label pill=True %}
+    </div>
+
+    {% if r.note %}<p class="quote">“{{ r.note }}”</p>{% endif %}
+
+    {% if r.status == "matched" and r.meetup %}
+      <div class="meetup">
+        {% icon "calendar-clock" 16 %}
+        <span><strong>{{ r.meetup.label }}</strong> at {{ r.meetup.location }}</span>
+      </div>
+      <div class="incoming-actions">
+        <form method="post" action="{% url 'complete_incoming' r.id %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-primary btn-sm">{% icon "circle-check" 15 %} Handed it to {{ person.first_name }}</button>
+        </form>
+      </div>
+    {% else %}
+      <span class="faint small">
+        {% if r.needed_by %}Needs it by {{ r.needed_by|nice_date }}{% endif %}{% if r.needed_by and r.location %} · {% endif %}{% if r.location %}Prefers {{ r.location }}{% endif %}
+      </span>
+      <div class="incoming-actions">
+        <form method="post" action="{% url 'decline_incoming' r.id %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-text btn-sm">Decline</button>
+        </form>
+        {% if row.can_accept %}
+          <a class="btn btn-primary btn-sm" href="?accept={{ r.id }}">Accept</a>
+        {% else %}
+          <button type="button" class="btn btn-primary btn-sm" disabled>Accept</button>
+        {% endif %}
+      </div>
+      {% if item and not row.can_accept %}
+        <span class="faint small incoming-hint">
+          {% if item.paused %}Resume sharing this item to accept.{% else %}No units left. Add one to accept.{% endif %}
+        </span>
+      {% endif %}
+    {% endif %}
+  </li>
+{% endwith %}

@@ -1,0 +1,33 @@
+{% load shelf_tags %}
+{% comment %}One item on your shelf. Expects row (a ShelfRow) and item (row.item).{% endcomment %}
+<li class="row{% if item.paused %} is-paused{% endif %}{% if forloop.counter > shelf_limit %} is-extra{% endif %}">
+  {% item_icon item %}
+  <div class="row-text">
+    <strong>{{ item.name }}</strong>
+    <span>{{ item.category|short_category }} · {{ item.condition }}</span>
+    {% if item.location %}<span class="row-loc">{% icon "map-pin" 11 %} {{ item.location }}</span>{% endif %}
+  </div>
+  <form class="qty" method="post" action="{% url 'change_qty' item.id %}">
+    {% csrf_token %}
+    <span class="qty-label">QTY</span>
+    <div class="qty-control">
+      <button name="step" value="down" aria-label="Decrease {{ item.name }}" {% if not row.can_decrease %}disabled{% endif %}>{% icon "minus" 12 %}</button>
+      <span>{{ item.qty }}</span>
+      <button name="step" value="up" aria-label="Increase {{ item.name }}" {% if not row.can_increase %}disabled{% endif %}>{% icon "plus" 12 %}</button>
+    </div>
+  </form>
+  {% status_badge row.status %}
+  <details class="menu">
+    <summary class="icon-button" aria-label="Options for {{ item.name }}">{% icon "ellipsis" 18 %}</summary>
+    <div class="menu-list" role="menu">
+      <form method="post" action="{% url 'toggle_pause' item.id %}">
+        {% csrf_token %}
+        <button type="submit" role="menuitem">{% if item.paused %}Resume sharing{% else %}Pause sharing{% endif %}</button>
+      </form>
+      <form method="post" action="{% url 'remove_item' item.id %}">
+        {% csrf_token %}
+        <button type="submit" role="menuitem" class="is-danger">Remove from shelf</button>
+      </form>
+    </div>
+  </details>
+</li>

@@ -1,0 +1,168 @@
+{% extends "shelf/app.html" %}
+{% load shelf_tags %}
+{% block title %}Overview · ShareShelf{% endblock %}
+
+{% block content %}
+  <div class="page">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Student dashboard</p>
+        <h1>{{ greeting }}, {{ profile.first_name }}</h1>
+        <p class="muted">Balanced view of your shared contributions and current campus requests.</p>
+      </div>
+      <div class="header-actions">
+        <a class="btn btn-ghost" href="?modal=request" data-open="request">{% icon "send" 16 %} Request an item</a>
+        <a class="btn btn-primary" href="?modal=share" data-open="share">{% icon "plus" 16 %} Post an item</a>
+      </div>
+    </header>
+
+    <section class="metrics">
+      <article class="card metric">
+        <div class="metric-icon tone-purple">{% icon "box" 20 1.75 %}</div>
+        <div>
+          <span class="metric-label">Items shared</span>
+          <div class="metric-value">
+            {{ stats.items_shared }}
+            {% if stats.shared_today %}
+              <span class="metric-trend up">{% icon "arrow-up" 12 %} {{ stats.shared_today }} today</span>
+            {% else %}
+              <span class="metric-trend">{{ stats.available }} available now</span>
+            {% endif %}
+          </div>
+        </div>
+      </article>
+      <article class="card metric">
+        <div class="metric-icon tone-orange">{% icon "target" 20 1.75 %}</div>
+        <div>
+          <span class="metric-label">Open requests</span>
+          <div class="metric-value">
+            {{ stats.open_requests }}
+            <span class="metric-trend">{{ stats.matched }} matched</span>
+          </div>
+        </div>
+      </article>
+      <article class="card metric">
+        <div class="metric-icon tone-green">{% icon "hand-heart" 20 1.75 %}</div>
+        <div>
+          <span class="metric-label">Students helped</span>
+          <div class="metric-value">
+            {{ stats.students_helped }}
+            {% if stats.helped_today %}
+              <span class="metric-trend up">{% icon "arrow-up" 12 %} {{ stats.helped_today }} today</span>
+            {% else %}
+              <span class="metric-trend">{{ stats.waiting_on_you }} waiting on you</span>
+            {% endif %}
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="columns">
+      <div class="column-stack">
+        <article class="card panel panel-incoming">
+          <div class="panel-head">
+            <div>
+              <h3>Incoming requests {% if new_incoming %}<span class="count-badge">{{ new_incoming }} new</span>{% endif %}</h3>
+              <p class="muted small">Classmates asking for items on your shelf</p>
+            </div>
+          </div>
+          {% if not incoming %}
+            <div class="panel-empty">
+              {% icon "inbox" 20 %}
+              <span class="muted small">No requests right now. You’ll see them here when someone asks for one of your items.</span>
+            </div>
+          {% else %}
+            <ul class="incoming-list">
+              {% for row in incoming %}
+                {% include "shelf/partials/incoming_request.html" with r=row.request item=row.item %}
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </article>
+
+        <article class="card panel panel-shelf">
+          <div class="panel-head">
+            <div>
+              <h3>Available on your shelf</h3>
+              <p class="muted small">Items you’re currently sharing with fellow {{ profile.school }} students</p>
+            </div>
+          </div>
+          {% if not shelf %}
+            <div class="panel-empty">
+              {% icon "box" 20 %}
+              <span class="muted small">Your shelf is empty. Post a spare supply so a classmate can use it.</span>
+            </div>
+          {% else %}
+            <ul class="rows" id="shelf-list" data-collapsible>
+              {% for row in shelf %}
+                {% include "shelf/partials/shelf_row.html" with item=row.item %}
+              {% endfor %}
+            </ul>
+          {% endif %}
+          {% if shelf_hidden %}
+            {% include "shelf/partials/show_more.html" with target="shelf-list" hidden_count=shelf_hidden %}
+          {% endif %}
+          <a class="dashed-button" href="?modal=share" data-open="share">{% icon "plus" 16 %} Add another item</a>
+        </article>
+      </div>
+
+      <article class="card panel panel-requests">
+        <div class="panel-head">
+          <div>
+            <h3>Your requests</h3>
+            <p class="muted small">Track what you’re looking for</p>
+          </div>
+        </div>
+        {% if not requests %}
+          <div class="panel-empty">
+            {% icon "target" 20 %}
+            <span class="muted small">You haven’t asked for anything yet.</span>
+          </div>
+        {% else %}
+          <ul class="request-list" id="request-list" data-collapsible>
+            {% for row in requests %}
+              {% with r=row.request %}
+                <li class="request{% if r.is_closed %} is-closed{% endif %}{% if forloop.counter > request_limit %} is-extra{% endif %}">
+                  <div class="request-top">
+                    <strong>{{ r.name }}</strong>
+                    {% status_badge r.status_label pill=True %}
+                  </div>
+                  <span class="muted small">{{ r.category|short_category }} · {{ r.condition_label }}</span>
+                  {% if row.matches %}
+                    <a class="match-hint" href="?request={{ r.id }}">
+                      {% icon "star" 12 2 "icon-filled" %} {{ row.matches|length }} possible match{{ row.matches|length|pluralize:"es" }}
+                    </a>
+                  {% endif %}
+                  <div class="request-bottom">
+                    <span class="faint small">{{ row.posted }}{% if r.needed_by %} · Needed by {{ r.needed_by|nice_date }}{% endif %}</span>
+                    <a class="link small" href="?request={{ r.id }}">
+                      View details {% if r.status == "matched" %}<span class="live-dot"></span>{% endif %}
+                    </a>
+                  </div>
+                </li>
+              {% endwith %}
+            {% endfor %}
+          </ul>
+        {% endif %}
+        {% if requests_hidden %}
+          {% include "shelf/partials/show_more.html" with target="request-list" hidden_count=requests_hidden %}
+        {% endif %}
+        <a class="soft-button" href="?modal=request" data-open="request">{% icon "plus" 16 %} Request an item</a>
+        <div class="match-banner">
+          {% icon "star" 16 2 "icon-filled" %}
+          <div>
+            <strong>We’re looking for matches</strong>
+            <span>Your open requests are checked against every item shared at {{ profile.school }}, and matches show up here.</span>
+          </div>
+        </div>
+      </article>
+    </section>
+  </div>
+{% endblock %}
+
+{% block modals %}
+  {% include "shelf/partials/share_modal.html" %}
+  {% include "shelf/partials/request_modal.html" %}
+  {% if accept %}{% include "shelf/partials/accept_modal.html" %}{% endif %}
+  {% if handoff %}{% include "shelf/partials/handoff_modal.html" %}{% endif %}
+{% endblock %}

@@ -1,0 +1,58 @@
+{% load shelf_tags %}
+{% comment %}The sharer's "Post an item" popup. Opens from any [data-open="share"] button, or ?modal=share.{% endcomment %}
+<div class="modal-backdrop" data-modal="share" {% if open_modal != "share" %}hidden{% endif %}>
+  <div class="modal" style="max-width: 672px" role="dialog" aria-modal="true" aria-labelledby="share-title">
+    {% include "shelf/partials/modal_header.html" with title_id="share-title" eyebrow="Sharer" community=profile.school|add:" Community" title="Post an Item" subtitle="List a spare supply so a classmate can use it." %}
+    <div class="modal-body">
+      <form class="form" method="post" action="{% url 'post_item' %}">
+        {% csrf_token %}
+        <label class="field">
+          <span class="field-label">Item Name <em>*</em></span>
+          <span class="input-wrap has-icon">
+            {% icon "package" 16 2 "input-icon" %}
+            <input class="input tinted" name="{{ share_form.name.html_name }}" id="{{ share_form.name.auto_id }}"
+                   placeholder="e.g. Scientific calculator" value="{{ share_form.name.value|default:'' }}" maxlength="80" required />
+          </span>
+          {% include "shelf/partials/field_error.html" with field=share_form.name %}
+        </label>
+
+        <div class="field-pair">
+          <label class="field">
+            <span class="field-label">Category <em>*</em></span>
+            {% include "shelf/partials/select.html" with field=share_form.category icon="shapes" %}
+          </label>
+          <label class="field">
+            <span class="field-label">Condition <em>*</em></span>
+            {% include "shelf/partials/select.html" with field=share_form.condition %}
+          </label>
+        </div>
+
+        <label class="field">
+          <span class="field-label">Description <span class="optional">(Optional)</span></span>
+          <textarea class="input tinted" rows="3" name="{{ share_form.description.html_name }}" maxlength="500"
+                    placeholder="Anything a classmate should know? Wear, missing parts, lend or keep.">{{ share_form.description.value|default:'' }}</textarea>
+        </label>
+
+        <button type="button" class="upload">{% icon "image-plus" 18 %} Add a photo (optional)</button>
+
+        <div class="field-pair">
+          <label class="field">
+            <span class="field-label">Quantity</span>
+            <input class="input tinted" type="number" min="1" max="20" name="{{ share_form.qty.html_name }}"
+                   value="{{ share_form.qty.value|default:1 }}" />
+            {% include "shelf/partials/field_error.html" with field=share_form.qty %}
+          </label>
+          <label class="field">
+            <span class="field-label">Pickup Location <em>*</em></span>
+            {% include "shelf/partials/select.html" with field=share_form.location icon="map-pin" %}
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <a class="btn btn-text" href="{{ request.path }}" data-close>Cancel</a>
+          <button type="submit" class="btn btn-primary">{% icon "plus" 15 %} Post Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,64 @@
+{% extends "shelf/app.html" %}
+{% load shelf_tags %}
+{% block title %}{{ item.name }} · ShareShelf{% endblock %}
+
+{% block content %}
+  <div class="page">
+    <a class="back-link" href="{% url 'browse' %}">{% icon "arrow-left" 16 %} Back to browse</a>
+
+    <div class="detail">
+      <article class="card detail-main">
+        <div class="detail-hero">{% item_icon item "lg" %}</div>
+        <div class="detail-body">
+          {% if item.qty > 0 and not item.paused %}
+            <span class="status status-green">Available · {{ item.qty }} left</span>
+          {% else %}
+            <span class="status status-gray">Not available right now</span>
+          {% endif %}
+          <h1>{{ item.name }}</h1>
+          <p class="muted">{{ item.category }} · {{ item.condition }}</p>
+          <p class="detail-desc">{{ item.description }}</p>
+          <dl class="detail-facts">
+            <div><dt>Pickup spot</dt><dd>{% icon "map-pin" 14 %} {{ item.location }}</dd></div>
+            <div><dt>Posted</dt><dd>{{ posted }}</dd></div>
+          </dl>
+        </div>
+      </article>
+
+      <aside class="detail-side">
+        <article class="card panel">
+          <h3>Shared by</h3>
+          <div class="person">
+            <div class="avatar">{{ item.owner.profile.initials }}</div>
+            <div>
+              <strong>{{ item.owner.profile.name }}</strong>
+              <span class="muted small">{{ item.owner.profile.program }}</span>
+            </div>
+          </div>
+          {% if requested %}
+            <div class="sent-note">
+              {% icon "circle-check" 18 %}
+              <div>
+                <strong>Request sent</strong>
+                <span>{{ item.owner.profile.first_name }} will confirm a pickup time. You’ll see it under Your requests on the dashboard.</span>
+              </div>
+            </div>
+          {% elif item.qty > 0 and not item.paused %}
+            <form method="post" action="{% url 'request_item' item.id %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-primary btn-block">{% icon "send" 16 %} Request this item</button>
+            </form>
+          {% endif %}
+          <button type="button" class="btn btn-ghost btn-block">{% icon "message-circle" 16 %} Message {{ item.owner.profile.first_name }}</button>
+        </article>
+        <div class="privacy-card">
+          <div class="privacy-icon">{% icon "shield-check" 16 %}</div>
+          <div>
+            <strong>Meet on campus</strong>
+            <span>Handoffs happen at school pickup spots only. Never share your home address.</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+{% endblock %}

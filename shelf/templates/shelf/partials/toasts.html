@@ -1,0 +1,11 @@
+{% load shelf_tags %}
+{% if messages %}
+  <div class="toasts">
+    {% for message in messages %}
+      <div class="toast{% if message.level_tag == 'error' %} is-error{% endif %}" role="status" data-toast>
+        {% if message.level_tag != 'error' %}{% icon "circle-check" 18 %}{% endif %}
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
