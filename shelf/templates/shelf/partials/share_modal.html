@@ -1,56 +1,106 @@
 {% load shelf_tags %}
-{% comment %}The sharer's "Post an item" popup. Opens from any [data-open="share"] button, or ?modal=share.{% endcomment %}
+{% comment %}
+  "New post", Share side (the Sharer's Form in Figma). Opens from any
+  [data-open="share"] button, or ?modal=share. The switch swaps to request_modal.
+{% endcomment %}
 <div class="modal-backdrop" data-modal="share" {% if open_modal != "share" %}hidden{% endif %}>
-  <div class="modal" style="max-width: 672px" role="dialog" aria-modal="true" aria-labelledby="share-title">
-    {% include "shelf/partials/modal_header.html" with title_id="share-title" eyebrow="Sharer" community=profile.school|add:" Community" title="Post an Item" subtitle="List a spare supply so a classmate can use it." %}
+  <div class="modal" style="max-width: 640px" role="dialog" aria-modal="true" aria-labelledby="share-title">
+    {% include "shelf/partials/modal_header.html" with title_id="share-title" eyebrow="Campus mutual aid" title="Share an Item" subtitle="Pass forward extra stationery, drafting tools, or equipment to peers." %}
     <div class="modal-body">
-      <form class="form" method="post" action="{% url 'post_item' %}">
+      {% include "shelf/partials/post_switch.html" with active="share" %}
+      <form class="form" method="post" action="{% url 'post_item' %}" data-share-form>
         {% csrf_token %}
-        <label class="field">
-          <span class="field-label">Item Name <em>*</em></span>
-          <span class="input-wrap has-icon">
-            {% icon "package" 16 2 "input-icon" %}
+
+        <fieldset class="field">
+          <legend class="field-label">Listing intent</legend>
+          <div class="choice-cards">
+            {% for value, label in listing_choices %}
+              <label class="choice-card">
+                <input type="radio" name="{{ share_form.listing.html_name }}" value="{{ value }}"
+                       {% if value == share_form.listing.value|default:"give" %}checked{% endif %} data-listing />
+                <span>
+                  <strong>{% if value == "give" %}{% icon "package" 14 %}{% else %}{% icon "calendar-clock" 14 %}{% endif %} {{ label }}</strong>
+                  <span class="muted small">{{ listing_hints|lookup:value }}</span>
+                </span>
+              </label>
+            {% endfor %}
+          </div>
+        </fieldset>
+
+        <div class="field-pair field-pair-wide">
+          <label class="field">
+            <span class="field-label-row">
+              <span class="field-label">Item title <em>*</em></span>
+              <span class="field-note">Max 80 chars</span>
+            </span>
             <input class="input tinted" name="{{ share_form.name.html_name }}" id="{{ share_form.name.auto_id }}"
-                   placeholder="e.g. Scientific calculator" value="{{ share_form.name.value|default:'' }}" maxlength="80" required />
-          </span>
-          {% include "shelf/partials/field_error.html" with field=share_form.name %}
-        </label>
-
-        <div class="field-pair">
-          <label class="field">
-            <span class="field-label">Category <em>*</em></span>
-            {% include "shelf/partials/select.html" with field=share_form.category icon="shapes" %}
+                   placeholder="e.g. TI-84 Plus CE Graphing Calculator" value="{{ share_form.name.value|default:'' }}" maxlength="80" required />
+            {% include "shelf/partials/field_error.html" with field=share_form.name %}
           </label>
-          <label class="field">
-            <span class="field-label">Condition <em>*</em></span>
-            {% include "shelf/partials/select.html" with field=share_form.condition %}
-          </label>
+          <div class="field">
+            <span class="field-label">Quantity</span>
+            <div class="qty-input" data-qty-input>
+              <button type="button" data-step="-1" aria-label="Fewer">{% icon "minus" 14 %}</button>
+              <input type="number" name="{{ share_form.qty.html_name }}" min="1" max="20" value="{{ share_form.qty.value|default:1 }}" aria-label="Quantity" />
+              <button type="button" data-step="1" aria-label="More">{% icon "plus" 14 %}</button>
+            </div>
+            {% include "shelf/partials/field_error.html" with field=share_form.qty %}
+          </div>
         </div>
 
         <label class="field">
-          <span class="field-label">Description <span class="optional">(Optional)</span></span>
-          <textarea class="input tinted" rows="3" name="{{ share_form.description.html_name }}" maxlength="500"
-                    placeholder="Anything a classmate should know? Wear, missing parts, lend or keep.">{{ share_form.description.value|default:'' }}</textarea>
+          <span class="field-label">Category</span>
+          {% include "shelf/partials/select.html" with field=share_form.category %}
         </label>
 
-        <button type="button" class="upload">{% icon "image-plus" 18 %} Add a photo (optional)</button>
+        <fieldset class="field">
+          <legend class="field-label-row">
+            <span class="field-label">Condition</span>
+            <span class="field-note">Be honest to ensure smooth handovers</span>
+          </legend>
+          <div class="pill-choices">
+            {% for value, label in share_form.condition.field.choices %}
+              <label class="pill-choice">
+                <input type="radio" name="{{ share_form.condition.html_name }}" value="{{ value }}" {% if value == share_form.condition.value %}checked{% endif %} />
+                <span>{{ label }}</span>
+              </label>
+            {% endfor %}
+          </div>
+        </fieldset>
 
-        <div class="field-pair">
+        <div class="lend-box" data-lend-only {% if share_form.listing.value != "lend" %}hidden{% endif %}>
           <label class="field">
-            <span class="field-label">Quantity</span>
-            <input class="input tinted" type="number" min="1" max="20" name="{{ share_form.qty.html_name }}"
-                   value="{{ share_form.qty.value|default:1 }}" />
-            {% include "shelf/partials/field_error.html" with field=share_form.qty %}
+            <span class="field-label">{% icon "calendar" 15 %} Maximum lending duration</span>
+            <span class="input-wrap">
+              <select class="input" name="{{ share_form.lend_limit.html_name }}">
+                {% for value, label in share_form.lend_limit.field.choices %}
+                  <option value="{{ value }}"{% if value == share_form.lend_limit.value %} selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+              {% icon "chevron-down" 16 2 "input-chevron" %}
+            </span>
+            {% include "shelf/partials/field_error.html" with field=share_form.lend_limit %}
           </label>
-          <label class="field">
-            <span class="field-label">Pickup Location <em>*</em></span>
-            {% include "shelf/partials/select.html" with field=share_form.location icon="map-pin" %}
-          </label>
+          <p class="lend-note">{% icon "message-circle" 13 %} Borrowers propose their own pickup and return dates when they ask. You keep final approval.</p>
         </div>
+
+        <label class="field">
+          <span class="field-label">Campus pickup spot</span>
+          {% include "shelf/partials/select.html" with field=share_form.location icon="map-pin" %}
+        </label>
+
+        <label class="field">
+          <span class="field-label-row">
+            <span class="field-label">Special guidelines / notes <span class="optional">(Optional)</span></span>
+            <span class="field-note">Included accessories</span>
+          </span>
+          <textarea class="input tinted" rows="3" name="{{ share_form.description.html_name }}" maxlength="500"
+                    placeholder="e.g. Includes charging cable and hard case. Please handle with care.">{{ share_form.description.value|default:'' }}</textarea>
+        </label>
 
         <div class="form-actions">
-          <a class="btn btn-text" href="{{ request.path }}" data-close>Cancel</a>
-          <button type="submit" class="btn btn-primary">{% icon "plus" 15 %} Post Item</button>
+          <a class="btn btn-ghost" href="{{ request.path }}" data-close>Cancel</a>
+          <button type="submit" class="btn btn-primary">{% icon "send" 15 %} Publish to campus shelf</button>
         </div>
       </form>
     </div>

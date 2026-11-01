@@ -5,7 +5,7 @@
     <div class="incoming-head">
       <div class="mini-avatar">{{ person.initials }}</div>
       <div class="incoming-text">
-        <span><strong>{{ person.name }}</strong> wants <strong>{{ item.name|default:r.name }}</strong></span>
+        <span><strong>{{ person.name }}</strong> {% if r.status == "lent" %}has{% elif r.is_lend %}wants to borrow{% else %}wants{% endif %} <strong>{{ item.name|default:r.name }}</strong></span>
         <span class="faint small">{{ person.program }}{% if person.program %} · {% endif %}{{ row.posted }}</span>
       </div>
       {% status_badge r.status_label pill=True %}
@@ -13,7 +13,18 @@
 
     {% if r.note %}<p class="quote">“{{ r.note }}”</p>{% endif %}
 
-    {% if r.status == "matched" and r.meetup %}
+    {% if r.status == "lent" %}
+      <div class="meetup{% if row.overdue %} is-overdue{% endif %}">
+        {% icon "calendar-clock" 16 %}
+        <span>Lent out · due back <strong>{{ r.return_by|nice_date }}</strong>{% if row.overdue %} · overdue{% endif %}</span>
+      </div>
+      <div class="incoming-actions">
+        <form method="post" action="{% url 'mark_returned' r.id %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-primary btn-sm">{% icon "circle-check" 15 %} Mark as returned</button>
+        </form>
+      </div>
+    {% elif r.status == "matched" and r.meetup %}
       <div class="meetup">
         {% icon "calendar-clock" 16 %}
         <span><strong>{{ r.meetup.label }}</strong> at {{ r.meetup.location }}</span>
@@ -21,12 +32,12 @@
       <div class="incoming-actions">
         <form method="post" action="{% url 'complete_incoming' r.id %}">
           {% csrf_token %}
-          <button type="submit" class="btn btn-primary btn-sm">{% icon "circle-check" 15 %} Handed it to {{ person.first_name }}</button>
+          <button type="submit" class="btn btn-primary btn-sm">{% icon "circle-check" 15 %} {% if r.is_lend %}Lent it to{% else %}Handed it to{% endif %} {{ person.first_name }}</button>
         </form>
       </div>
     {% else %}
       <span class="faint small">
-        {% if r.needed_by %}Needs it by {{ r.needed_by|nice_date }}{% endif %}{% if r.needed_by and r.location %} · {% endif %}{% if r.location %}Prefers {{ r.location }}{% endif %}
+        {% if r.is_lend and r.borrow_from %}Borrow {{ r.borrow_from|nice_date }} → return {{ r.return_by|nice_date }}{% elif r.needed_by %}Needs it by {{ r.needed_by|nice_date }}{% endif %}{% if r.location %} · Prefers {{ r.location }}{% endif %}
       </span>
       <div class="incoming-actions">
         <form method="post" action="{% url 'decline_incoming' r.id %}">

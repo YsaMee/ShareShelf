@@ -23,8 +23,10 @@
     </section>
 
     <section class="login-panel">
-      <form class="login-form" method="post" novalidate>
+      <form class="login-form{% if mode == 'signup' %} is-signup{% endif %}" method="post" novalidate>
         {% csrf_token %}
+        <img class="brand-logo" src="{% static 'shelf/ShareShelf_logo.png' %}" alt="ShareShelf — Share, Seek, Support" width="368" height="101" />
+
         <nav class="segmented" aria-label="Log in or create account">
           <a href="{% url 'login' %}" class="{% if mode == 'login' %}is-active{% endif %}" {% if mode == 'login' %}aria-current="page"{% endif %}>Log in</a>
           <a href="{% url 'signup' %}" class="{% if mode == 'signup' %}is-active{% endif %}" {% if mode == 'signup' %}aria-current="page"{% endif %}>Create account</a>
@@ -33,8 +35,8 @@
         <div class="login-heading">
           {% if mode == "signup" %}
             <p class="eyebrow">Join ShareShelf</p>
-            <h2>Start sharing in a minute.</h2>
-            <p class="muted">Use your school email so classmates know it’s you.</p>
+            <h2>Create your student account.</h2>
+            <p class="muted">Sign up with your Mapúa MCM student email to borrow and share campus supplies safely.</p>
           {% else %}
             <p class="eyebrow">Welcome back</p>
             <h2>Good to see you again.</h2>
@@ -44,51 +46,85 @@
 
         {% if form.non_field_errors %}<p class="form-error" role="alert">{{ form.non_field_errors.0 }}</p>{% endif %}
 
-        <div class="fields">
-          {% if mode == "signup" %}
+        {% if mode == "signup" %}
+          <div class="fields">
             <label class="field">
               <span class="field-label">Full name</span>
-              <input class="input" name="name" placeholder="John Paraunda" value="{{ form.name.value|default:'' }}" maxlength="80" required />
+              <input class="input" name="name" placeholder="Your full name" value="{{ form.name.value|default:'' }}" maxlength="80" required autocomplete="name" />
               {% include "shelf/partials/field_error.html" with field=form.name %}
             </label>
             <label class="field">
-              <span class="field-label">Program <span class="optional">(Optional)</span></span>
-              <input class="input" name="program" placeholder="BS Architecture" value="{{ form.program.value|default:'' }}" maxlength="80" />
+              <span class="field-label-row">
+                <span class="field-label">Email</span>
+                <span class="field-note">Institution only</span>
+              </span>
+              <input class="input" type="email" name="email" placeholder="you@students.mcm.edu.ph" value="{{ form.email.value|default:'' }}" required autocomplete="email" />
+              {% if form.email.errors %}
+                {% include "shelf/partials/field_error.html" with field=form.email %}
+              {% else %}
+                <span class="field-note">Must be a school address ending in .edu.ph</span>
+              {% endif %}
             </label>
-          {% endif %}
-          <label class="field">
-            <span class="field-label">School email</span>
-            <input class="input" type="email" name="email" placeholder="you@school.edu" value="{{ form.email.value|default:'' }}" required />
-            {% include "shelf/partials/field_error.html" with field=form.email %}
-          </label>
-          <label class="field">
-            <span class="field-label-row">
-              <span class="field-label">Password</span>
-              {% if mode == "login" %}<a class="link" href="#">Forgot password?</a>{% endif %}
-            </span>
-            <span class="input-wrap">
-              <input class="input" type="password" name="password" placeholder="••••••••" required data-password />
-              <button type="button" class="input-suffix" data-toggle-password aria-label="Show password" aria-pressed="false">
-                <span data-eye>{% icon "eye" 16 %}</span><span data-eye-off hidden>{% icon "eye-off" 16 %}</span>
-              </button>
-            </span>
-            {% include "shelf/partials/field_error.html" with field=form.password %}
-          </label>
-        </div>
+            <label class="field">
+              <span class="field-label">Program</span>
+              <span class="input-wrap">
+                <select class="input" name="program" required>
+                  <option value="" disabled{% if not form.program.value %} selected{% endif %}>Select your program</option>
+                  {% for value, label in form.program.field.choices %}
+                    <option value="{{ value }}"{% if value == form.program.value %} selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+                {% icon "chevron-down" 16 2 "input-chevron" %}
+              </span>
+              {% include "shelf/partials/field_error.html" with field=form.program %}
+            </label>
+            <div class="field-pair">
+              <label class="field">
+                <span class="field-label">Create password</span>
+                {% include "shelf/partials/password_input.html" with name="password" role="new" autocomplete="new-password" %}
+                {% include "shelf/partials/field_error.html" with field=form.password %}
+              </label>
+              <label class="field">
+                <span class="field-label">Confirm password</span>
+                {% include "shelf/partials/password_input.html" with name="confirm_password" role="confirm" autocomplete="new-password" %}
+                {% include "shelf/partials/field_error.html" with field=form.confirm_password %}
+              </label>
+            </div>
+            <ul class="password-rules" aria-label="Password requirements" data-password-rules>
+              <li class="rule" data-rule="length">{% icon "circle-check" 12 %} 8+ characters</li>
+              <li class="rule" data-rule="mix">{% icon "circle-check" 12 %} Letters &amp; digits</li>
+              <li class="rule" data-rule="match">{% icon "circle-check" 12 %} Passwords match</li>
+            </ul>
+            <label class="checkbox-row">
+              <input type="checkbox" name="agree"{% if form.agree.value %} checked{% endif %} required />
+              <span>I agree to the <a class="link" href="#">Terms of Service</a> and <a class="link" href="#">Privacy Policy</a>.</span>
+            </label>
+            {% include "shelf/partials/field_error.html" with field=form.agree %}
+          </div>
 
-        <button type="submit" class="btn btn-primary btn-block">
-          {% if mode == "signup" %}Create my account{% else %}Log in to ShareShelf{% endif %}
-          {% icon "arrow-right" 16 %}
-        </button>
+          <button type="submit" class="btn btn-primary btn-block">Create account {% icon "arrow-right" 16 %}</button>
+          <p class="switch-line">Already have an account? <a class="link" href="{% url 'login' %}">Log in</a></p>
+        {% else %}
+          <div class="fields">
+            <label class="field">
+              <span class="field-label">School email</span>
+              <input class="input" type="email" name="email" placeholder="you@school.edu" value="{{ form.email.value|default:'' }}" required autocomplete="email" />
+              {% include "shelf/partials/field_error.html" with field=form.email %}
+            </label>
+            <label class="field">
+              <span class="field-label-row">
+                <span class="field-label">Password</span>
+                <a class="link" href="#">Forgot password?</a>
+              </span>
+              {% include "shelf/partials/password_input.html" with name="password" autocomplete="current-password" %}
+              {% include "shelf/partials/field_error.html" with field=form.password %}
+            </label>
+          </div>
 
-        <p class="switch-line">
-          {% if mode == "signup" %}
-            Already have an account? <a class="link" href="{% url 'login' %}">Log in</a>
-          {% else %}
-            New to ShareShelf? <a class="link" href="{% url 'signup' %}">Create an account</a>
-          {% endif %}
-        </p>
-        <p class="legal">By continuing, you agree to our <u>Terms</u> and <u>Privacy Policy</u>.</p>
+          <button type="submit" class="btn btn-primary btn-block">Log in to ShareShelf {% icon "arrow-right" 16 %}</button>
+          <p class="switch-line">New to ShareShelf? <a class="link" href="{% url 'signup' %}">Create an account</a></p>
+          <p class="legal">By continuing, you agree to our <u>Terms</u> and <u>Privacy Policy</u>.</p>
+        {% endif %}
       </form>
     </section>
   </div>

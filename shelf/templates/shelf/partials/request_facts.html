@@ -7,7 +7,9 @@
   <div class="request-facts">
     {% if handoff.needed_by or show_location and handoff.location %}
       <dl class="detail-facts">
-        {% if handoff.needed_by %}
+        {% if handoff.is_lend and handoff.borrow_from %}
+          <div><dt>Borrow</dt><dd>{% icon "calendar" 14 %} {{ handoff.borrow_from|nice_date }} – {{ handoff.return_by|nice_date }}</dd></div>
+        {% elif handoff.needed_by %}
           <div><dt>Needed by</dt><dd>{% icon "calendar" 14 %} {{ handoff.needed_by|nice_date }}</dd></div>
         {% endif %}
         {% if show_location and handoff.location %}

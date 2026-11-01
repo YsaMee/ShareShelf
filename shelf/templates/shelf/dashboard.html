@@ -11,8 +11,7 @@
         <p class="muted">Balanced view of your shared contributions and current campus requests.</p>
       </div>
       <div class="header-actions">
-        <a class="btn btn-ghost" href="?modal=request" data-open="request">{% icon "send" 16 %} Request an item</a>
-        <a class="btn btn-primary" href="?modal=share" data-open="share">{% icon "plus" 16 %} Post an item</a>
+        <a class="btn btn-primary" href="?modal=share" data-open="share">{% icon "plus" 16 %} New post</a>
       </div>
     </header>
 
@@ -127,16 +126,24 @@
                     <strong>{{ r.name }}</strong>
                     {% status_badge r.status_label pill=True %}
                   </div>
-                  <span class="muted small">{{ r.category|short_category }} · {{ r.condition_label }}</span>
+                  <span class="muted small">{{ r.category|short_category }} · {% if r.is_lend %}Borrow{% else %}{{ r.condition_label }}{% endif %}</span>
                   {% if row.matches %}
                     <a class="match-hint" href="?request={{ r.id }}">
                       {% icon "star" 12 2 "icon-filled" %} {{ row.matches|length }} possible match{{ row.matches|length|pluralize:"es" }}
                     </a>
                   {% endif %}
                   <div class="request-bottom">
-                    <span class="faint small">{{ row.posted }}{% if r.needed_by %} · Needed by {{ r.needed_by|nice_date }}{% endif %}</span>
+                    <span class="faint small">
+                      {% if r.status == "lent" and r.return_by %}
+                        Return by {{ r.return_by|nice_date }}{% if row.overdue %} <span class="status status-red is-pill">Overdue</span>{% endif %}
+                      {% elif r.is_lend and r.borrow_from %}
+                        {{ r.borrow_from|nice_date }} – {{ r.return_by|nice_date }}
+                      {% else %}
+                        {{ row.posted }}{% if r.needed_by %} · Needed by {{ r.needed_by|nice_date }}{% endif %}
+                      {% endif %}
+                    </span>
                     <a class="link small" href="?request={{ r.id }}">
-                      View details {% if r.status == "matched" %}<span class="live-dot"></span>{% endif %}
+                      View details {% if r.status == "matched" or row.overdue %}<span class="live-dot"></span>{% endif %}
                     </a>
                   </div>
                 </li>

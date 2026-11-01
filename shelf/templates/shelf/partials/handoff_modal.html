@@ -11,7 +11,25 @@
     {% endwith %}
     <div class="modal-body">
       <div class="handoff">
-        {% if handoff.status == "matched" and handoff.meetup %}
+        {% if handoff.status == "lent" %}
+          {% with person=handoff.other_party %}
+            <div class="person">
+              <div class="avatar">{{ person.initials }}</div>
+              <div>
+                <strong>{{ person.name }}</strong>
+                <span class="muted small">lent this to you</span>
+              </div>
+            </div>
+            <div class="meetup{% if handoff_overdue %} is-overdue{% endif %}">
+              {% icon "calendar-clock" 16 %}
+              <span>Return by <strong>{{ handoff.return_by|nice_date }}</strong>{% if handoff_overdue %}, it’s overdue. Please return it to {{ person.first_name }} as soon as you can.{% endif %}</span>
+            </div>
+            <p class="muted small">{{ person.first_name }} marks it as returned once you hand it back.</p>
+          {% endwith %}
+          <div class="form-actions">
+            <a class="btn btn-primary" href="{{ dashboard_url }}" data-close>OK</a>
+          </div>
+        {% elif handoff.status == "matched" and handoff.meetup %}
           {% with person=handoff.other_party meetup=handoff.meetup %}
             <div class="person">
               <div class="avatar">{{ person.initials }}</div>
@@ -24,6 +42,7 @@
               <li class="is-done">{% icon "circle-check" 16 %} Matched with {{ person.first_name }}</li>
               <li class="is-current">{% icon "clock" 16 %} Meet up: {{ meetup.label }}</li>
               <li>{% icon "circle-check" 16 %} Confirm you got it</li>
+              {% if handoff.is_lend %}<li>{% icon "calendar-clock" 16 %} Return it by {{ handoff.return_by|nice_date }}</li>{% endif %}
             </ol>
             <div class="handoff-spot">
               {% icon "map-pin" 16 %}
@@ -52,6 +71,7 @@
               {% if handoff.status == "fulfilled" %}This one’s done. Hope it helped!
               {% elif handoff.status == "cancelled" %}You cancelled this request.
               {% elif handoff.status == "declined" %}{{ handoff.other_party.first_name|default:"The sharer" }} couldn’t lend this one.
+              {% elif handoff.status == "returned" %}You returned this to {{ handoff.other_party.first_name|default:"the sharer" }}. Thanks!
               {% elif handoff.status == "requested" %}Waiting for {{ handoff.other_party.first_name|default:"the sharer" }} to accept and set a pickup time.
               {% elif handoff_matches %}These classmates have something that fits. Ask one of them.
               {% else %}No match yet. It’ll show up here as soon as someone shares one.{% endif %}
@@ -65,13 +85,17 @@
                   {% item_icon item %}
                   <div class="row-text">
                     <strong>{{ item.name }}</strong>
-                    <span>{{ item.condition }} · {{ item.owner.profile.name }}</span>
+                    <span>{{ item.condition }} · {{ item.listing_label }} · {{ item.owner.profile.name }}</span>
                     <span class="row-loc">{% icon "map-pin" 11 %} {{ item.location }}</span>
                   </div>
-                  <form method="post" action="{% url 'ask_for_match' handoff.id item.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-primary btn-sm">{% icon "send" 14 %} Ask for this</button>
-                  </form>
+                  {% if item.is_lend %}
+                    <a class="btn btn-primary btn-sm" href="{% url 'item_detail' item.id %}?request={{ handoff.id }}">{% icon "calendar-clock" 14 %} Borrow this</a>
+                  {% else %}
+                    <form method="post" action="{% url 'ask_for_match' handoff.id item.id %}">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-primary btn-sm">{% icon "send" 14 %} Ask for this</button>
+                    </form>
+                  {% endif %}
                 </li>
               {% endfor %}
             </ul>

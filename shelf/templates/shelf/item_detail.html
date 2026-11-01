@@ -10,16 +10,20 @@
       <article class="card detail-main">
         <div class="detail-hero">{% item_icon item "lg" %}</div>
         <div class="detail-body">
-          {% if item.qty > 0 and not item.paused %}
-            <span class="status status-green">Available · {{ item.qty }} left</span>
-          {% else %}
-            <span class="status status-gray">Not available right now</span>
-          {% endif %}
+          <div class="detail-tags">
+            {% if item.qty > 0 and not item.paused %}
+              <span class="status status-green">Available · {{ item.qty }} left</span>
+            {% else %}
+              <span class="status status-gray">Not available right now</span>
+            {% endif %}
+            <span class="listing-tag{% if item.is_lend %} is-lend{% endif %}">{{ item.listing_label }}</span>
+          </div>
           <h1>{{ item.name }}</h1>
           <p class="muted">{{ item.category }} · {{ item.condition }}</p>
           <p class="detail-desc">{{ item.description }}</p>
           <dl class="detail-facts">
             <div><dt>Pickup spot</dt><dd>{% icon "map-pin" 14 %} {{ item.location }}</dd></div>
+            {% if item.is_lend %}<div><dt>Lending limit</dt><dd>{% icon "calendar-clock" 14 %} {{ item.get_lend_limit_display }}</dd></div>{% endif %}
             <div><dt>Posted</dt><dd>{{ posted }}</dd></div>
           </dl>
         </div>
@@ -39,13 +43,42 @@
             <div class="sent-note">
               {% icon "circle-check" 18 %}
               <div>
-                <strong>Request sent</strong>
+                <strong>{% if item.is_lend %}Borrow request sent{% else %}Request sent{% endif %}</strong>
                 <span>{{ item.owner.profile.first_name }} will confirm a pickup time. You’ll see it under Your requests on the dashboard.</span>
               </div>
             </div>
+          {% elif item.qty > 0 and not item.paused and item.is_lend %}
+            {% comment %}The borrower's form. rules.pl checks the dates against the lending limit.{% endcomment %}
+            <form class="form borrow-form" method="post" action="{% url 'request_item' item.id %}">
+              {% csrf_token %}
+              {% if open_request %}<input type="hidden" name="open_request" value="{{ open_request.id }}" />{% endif %}
+              <h4>Borrow this item</h4>
+              <p class="muted small">{{ item.owner.profile.first_name }} lends it {{ item.get_lend_limit_display|lower }}. Pick your dates and they’ll approve.</p>
+              <div class="field-pair">
+                <label class="field">
+                  <span class="field-label">Borrow from</span>
+                  <input class="input tinted" type="date" name="{{ borrow_form.borrow_from.html_name }}" min="{{ today|date:'Y-m-d' }}"
+                         value="{{ borrow_form.borrow_from.value|default:''|stringformat:'s' }}" required />
+                  {% include "shelf/partials/field_error.html" with field=borrow_form.borrow_from %}
+                </label>
+                <label class="field">
+                  <span class="field-label">Return by</span>
+                  <input class="input tinted" type="date" name="{{ borrow_form.return_by.html_name }}" min="{{ today|date:'Y-m-d' }}"
+                         value="{{ borrow_form.return_by.value|default:''|stringformat:'s' }}" required />
+                  {% include "shelf/partials/field_error.html" with field=borrow_form.return_by %}
+                </label>
+              </div>
+              <label class="field">
+                <span class="field-label">Note <span class="optional">(Optional)</span></span>
+                <textarea class="input tinted" rows="2" name="{{ borrow_form.note.html_name }}" maxlength="200"
+                          placeholder="e.g. Need it for the Circuits 1 exam on Friday.">{{ borrow_form.note.value|default:'' }}</textarea>
+              </label>
+              <button type="submit" class="btn btn-primary btn-block">{% icon "calendar-clock" 16 %} Ask to borrow</button>
+            </form>
           {% elif item.qty > 0 and not item.paused %}
             <form method="post" action="{% url 'request_item' item.id %}">
               {% csrf_token %}
+              {% if open_request %}<input type="hidden" name="open_request" value="{{ open_request.id }}" />{% endif %}
               <button type="submit" class="btn btn-primary btn-block">{% icon "send" 16 %} Request this item</button>
             </form>
           {% endif %}
