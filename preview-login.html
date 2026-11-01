@@ -1,0 +1,639 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/shelf/static/shelf/ShareShelf_logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/shelf/static/shelf/styles.css" />
+    <title>Log in · ShareShelf</title>
+    <style>
+      body {
+        background: #f3f4f7;
+      }
+
+      .login {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      .login-hero {
+        width: 45%;
+        min-width: 420px;
+        background: linear-gradient(135deg, #4d3d9c 0%, #4c3cab 100%);
+        color: #fff;
+        padding: 44px 48px 32px;
+        position: relative;
+        overflow: hidden;
+        gap: 22px;
+      }
+
+      .hero-copy {
+        position: relative;
+        z-index: 1;
+      }
+
+      .hero-eyebrow {
+        font-size: 12px;
+        letter-spacing: 0.26em;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.75);
+        margin-bottom: 18px;
+      }
+
+      .hero-copy h1 {
+        font-size: clamp(2.4rem, 4vw, 3.2rem);
+        line-height: 0.95;
+        letter-spacing: -0.06em;
+        font-weight: 800;
+        max-width: 420px;
+        margin-bottom: 20px;
+      }
+
+      .hero-lede {
+        max-width: 420px;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: rgba(255,255,255,0.86);
+      }
+
+      .hero-art {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 310px;
+        display: block;
+        margin: 12px auto;
+      }
+
+      .hero-footer {
+        gap: 14px;
+      }
+
+      .hero-stats {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(80px, 1fr));
+        gap: 18px;
+        max-width: 460px;
+        margin-top: 8px;
+      }
+
+      .hero-stats strong {
+        display: block;
+        font-size: 2.2rem;
+        line-height: 1.1;
+        font-weight: 800;
+        letter-spacing: -0.05em;
+      }
+
+      .hero-stats span {
+        font-size: 0.8rem;
+        color: rgba(255,255,255,0.78);
+      }
+
+      .hero-note {
+        font-size: 0.75rem;
+        color: rgba(255,255,255,0.65);
+        margin-top: 18px;
+      }
+
+      .login-panel {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 32px 54px;
+        background: #f4f5f8;
+      }
+
+      .auth-shell {
+        width: min(100%, 470px);
+      }
+
+      .brand {
+        margin: 0 0 20px;
+      }
+
+      .brand-logo {
+        display: block;
+        width: min(100%, 360px);
+        height: auto;
+        margin: 0 auto;
+      }
+
+      .segmented {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        background: #edf0f7;
+        border: 1px solid #e3e7ef;
+        border-radius: 12px;
+        padding: 4px;
+        margin-bottom: 22px;
+      }
+
+      .segmented button {
+        appearance: none;
+        border: 0;
+        border-radius: 9px;
+        background: transparent;
+        color: #687385;
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 8px 10px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+
+      .segmented button.is-active {
+        background: #f2f0ff;
+        color: #503ed8;
+        box-shadow: inset 0 0 0 1px rgba(84,56,220,0.06);
+      }
+
+      .auth-panel {
+        display: none;
+      }
+
+      .auth-panel.is-active {
+        display: block;
+      }
+
+      .auth-heading {
+        margin: 0 0 18px;
+      }
+
+      .auth-heading .eyebrow {
+        color: #5d4cc7;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        font-size: 0.74rem;
+        margin-bottom: 10px;
+      }
+
+      .auth-heading h2 {
+        font-size: clamp(2rem, 3vw, 2.7rem);
+        line-height: 1.08;
+        letter-spacing: -0.05em;
+        color: #191d2d;
+        margin: 0 0 8px;
+      }
+
+      .auth-heading p {
+        color: #6d7788;
+        font-size: 1.05rem;
+      }
+
+      .fields {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .field-label-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .field-label {
+        color: #2f3547;
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+
+      .field-label .optional {
+        color: #8a8d9d;
+        font-weight: 400;
+      }
+
+      .field .input {
+        width: 100%;
+        border-radius: 9px;
+        border: 1px solid #dfe4ef;
+        background: #fff;
+        font-size: 0.78rem;
+        padding: 8px 12px;
+        color: #1d2433;
+        outline: none;
+      }
+
+      .field .input::placeholder {
+        color: #a2a9b9;
+      }
+
+      .field .input:focus {
+        border-color: #5b4bcb;
+        box-shadow: 0 0 0 4px rgba(91,75,203,0.08);
+      }
+
+      .input-wrap {
+        position: relative;
+      }
+
+      .input-wrap .input {
+        padding-right: 52px;
+      }
+
+      .input-suffix {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 28px;
+        height: 28px;
+        display: grid;
+        place-items: center;
+        background: transparent;
+        border: 0;
+        color: #8390a8;
+        cursor: pointer;
+      }
+
+      .field-note {
+        font-size: 0.62rem;
+        color: #818aa0;
+      }
+
+      .field-note .error {
+        color: #c13a3a;
+      }
+
+      .field-pair {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .password-rules {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 2px;
+      }
+
+      .password-rules .rule {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.72rem;
+        color: #77839a;
+        background: #f0f2f7;
+        border: 1px solid #e2e7f0;
+        border-radius: 999px;
+        padding: 3px 7px;
+      }
+
+      .password-rules .rule.is-good {
+        color: #177d4e;
+        background: #eaf8f1;
+        border-color: #cfeedd;
+      }
+
+      .checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        color: #3c4659;
+        font-size: 0.72rem;
+        margin-top: 2px;
+      }
+
+      .checkbox-row input {
+        width: 16px;
+        height: 16px;
+        accent-color: #5b4bcb;
+      }
+
+      .btn {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        border: 0;
+        border-radius: 9px;
+        padding: 10px 18px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        cursor: pointer;
+        width: 100%;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #5743d3, #4e3ecd);
+        color: white;
+        box-shadow: 0 12px 22px rgba(84,56,220,0.22);
+      }
+
+      .switch-line {
+        text-align: center;
+        font-size: 0.75rem;
+        color: #5d687c;
+        margin-top: 14px;
+      }
+
+      .switch-line a {
+        color: #5a49d2;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .legal {
+        text-align: center;
+        font-size: 0.62rem;
+        line-height: 1.6;
+        color: #8a90a0;
+        margin-top: 8px;
+      }
+
+      .legal a {
+        color: #5d6d87;
+      }
+
+      @media (min-width: 1100px) and (min-height: 900px) {
+        .login-hero {
+          padding: 58px 48px 40px;
+        }
+
+        .hero-art {
+          max-width: 390px;
+        }
+
+        .login-panel {
+          align-items: flex-start;
+          padding: 54px 72px 40px;
+        }
+
+        .auth-shell {
+          width: min(100%, 520px);
+        }
+
+        .brand-logo {
+          width: min(100%, 420px);
+        }
+
+        .segmented {
+          margin-bottom: 26px;
+        }
+
+        .segmented button {
+          font-size: 0.9rem;
+          padding: 10px;
+        }
+
+        .fields {
+          gap: 14px;
+        }
+
+        .field {
+          gap: 6px;
+        }
+
+        .field-label {
+          font-size: 0.82rem;
+        }
+
+        .field .input {
+          font-size: 0.9rem;
+          padding: 10px 14px;
+        }
+
+        .field-note {
+          font-size: 0.68rem;
+        }
+
+        .password-rules .rule {
+          font-size: 0.78rem;
+          padding: 4px 9px;
+        }
+
+        .checkbox-row {
+          font-size: 0.8rem;
+        }
+
+        .btn {
+          font-size: 0.9rem;
+          padding: 12px 18px;
+        }
+
+        .switch-line {
+          font-size: 0.82rem;
+        }
+
+        .legal {
+          font-size: 0.68rem;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .login {
+          flex-direction: column;
+        }
+
+        .login-hero {
+          width: 100%;
+          min-width: 0;
+          min-height: auto;
+          padding-bottom: 20px;
+        }
+
+        .login-panel {
+          padding: 32px 24px;
+        }
+
+        .hero-copy h1 {
+          font-size: clamp(2.6rem, 11vw, 4rem);
+        }
+
+        .hero-art {
+          max-width: 320px;
+          margin: 28px auto;
+        }
+
+        .field-pair {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login">
+      <section class="login-hero">
+        <div class="hero-ring ring-1"></div>
+        <div class="hero-ring ring-2"></div>
+
+        <div class="hero-copy">
+          <p class="hero-eyebrow">Share more. Waste less.</p>
+          <h1>Every supply deserves a second story.</h1>
+          <p class="hero-lede">Connect with students at your school to share what you have and find what you need.</p>
+        </div>
+
+        <img class="hero-art" src="/shelf/static/shelf/shelf.png" alt="" width="407" height="265" />
+
+        <div class="hero-footer">
+          <div class="hero-stats">
+            <div><strong>1,240+</strong><span>supplies shared</span></div>
+            <div><strong>680</strong><span>students helped</span></div>
+            <div><strong>24</strong><span>school communities</span></div>
+          </div>
+          <p class="hero-note">Built for students, powered by community.</p>
+        </div>
+      </section>
+
+      <section class="login-panel">
+        <div class="auth-shell">
+          <div class="brand">
+            <img class="brand-logo" src="/shelf/static/shelf/ShareShelf_logo.png" alt="ShareShelf — Share, Seek, Support" width="370" height="105" />
+          </div>
+
+          <div class="segmented" role="tablist" aria-label="Authentication mode">
+            <button type="button" class="is-active" data-mode="login" aria-selected="true">Log in</button>
+            <button type="button" data-mode="signup" aria-selected="false">Create account</button>
+          </div>
+
+          <div class="auth-panel is-active" data-panel="login">
+            <div class="auth-heading">
+              <div class="eyebrow">Welcome back</div>
+              <h2>Good to see you again.</h2>
+              <p>Log in to manage your shares and requests.</p>
+            </div>
+
+            <div class="fields">
+              <label class="field">
+                <span class="field-label">School email</span>
+                <input class="input" type="email" placeholder="you@school.edu" />
+              </label>
+
+              <label class="field">
+                <span class="field-label-wrap">
+                  <span class="field-label">Password</span>
+                  <a class="link" href="#" style="color:#5b4bcb; font-size:0.8rem; font-weight:700; text-decoration:none;">Forgot password?</a>
+                </span>
+                <span class="input-wrap">
+                  <input class="input" type="password" placeholder="••••••••" />
+                  <button type="button" class="input-suffix" aria-label="Show password">👁</button>
+                </span>
+              </label>
+            </div>
+
+            <button type="button" class="btn btn-primary" style="margin-top:20px;">Log in to ShareShelf</button>
+
+            <p class="switch-line">New to ShareShelf? <a href="#" data-switch="signup">Create an account</a></p>
+            <p class="legal">By continuing, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</p>
+          </div>
+
+          <div class="auth-panel" data-panel="signup">
+            <div class="auth-heading">
+              <div class="eyebrow">Join ShareShelf</div>
+              <h2>Create your student account.</h2>
+              <p>Sign up with your Mapúa MCM student credentials to borrow and share campus supplies safely.</p>
+            </div>
+
+            <div class="fields">
+              <label class="field">
+                <span class="field-label">Full Name</span>
+                <input class="input" type="text" placeholder="Your full name" />
+              </label>
+
+              <label class="field">
+                <span class="field-label-wrap">
+                  <span class="field-label">Email</span>
+                  <span class="field-note">Institution only</span>
+                </span>
+                <input class="input" type="email" placeholder="you@students.mcm.edu.ph" />
+                <span class="field-note"><span class="error">●</span> Must be a valid institutional school address (.edu.ph)</span>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Department / College</span>
+                <select class="input" aria-label="Department / College">
+                  <option selected>Select program</option>
+                  <option>BS Architecture</option>
+                  <option>BS Civil Engineering</option>
+                  <option>BS Computer Science</option>
+                  <option>BS Psychology</option>
+                  <option>BS Nursing</option>
+                </select>
+              </label>
+
+              <div class="field-pair">
+                <label class="field">
+                  <span class="field-label">Create password</span>
+                  <span class="input-wrap">
+                    <input class="input" type="password" placeholder="••••••••" />
+                    <button type="button" class="input-suffix" aria-label="Show password">👁</button>
+                  </span>
+                </label>
+
+                <label class="field">
+                  <span class="field-label">Confirm password</span>
+                  <span class="input-wrap">
+                    <input class="input" type="password" placeholder="••••••••" />
+                    <button type="button" class="input-suffix" aria-label="Show password">👁</button>
+                  </span>
+                </label>
+              </div>
+
+              <div class="password-rules" aria-label="Password requirements">
+                <span class="rule is-good">● 8+ characters</span>
+                <span class="rule is-good">● Letters &amp; digits</span>
+                <span class="rule is-good">● Passcodes match</span>
+              </div>
+
+              <label class="checkbox-row">
+                <input type="checkbox" />
+                <span>I agree to the <a href="#" style="color:#5b4bcb; text-decoration:none; font-weight:700;">Terms of Service</a> and <a href="#" style="color:#5b4bcb; text-decoration:none; font-weight:700;">Privacy Policy</a>.</span>
+              </label>
+            </div>
+
+            <button type="button" class="btn btn-primary" style="margin-top:14px;">Create account →</button>
+
+            <p class="switch-line">Already have an account? <a href="#" data-switch="login">Log in</a></p>
+            <p class="legal">By signing up, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const tabButtons = document.querySelectorAll('[data-mode]');
+      const panels = document.querySelectorAll('[data-panel]');
+      const switchLinks = document.querySelectorAll('[data-switch]');
+
+      function setMode(mode) {
+        tabButtons.forEach((button) => {
+          const active = button.dataset.mode === mode;
+          button.classList.toggle('is-active', active);
+          button.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+
+        panels.forEach((panel) => {
+          panel.classList.toggle('is-active', panel.dataset.panel === mode);
+        });
+      }
+
+      tabButtons.forEach((button) => {
+        button.addEventListener('click', () => setMode(button.dataset.mode));
+      });
+
+      switchLinks.forEach((link) => {
+        link.addEventListener('click', (event) => {
+          event.preventDefault();
+          setMode(link.dataset.switch);
+        });
+      });
+    </script>
+  </body>
+</html>
