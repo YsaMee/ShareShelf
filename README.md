@@ -52,30 +52,30 @@ The back end has to supply the pieces below with these exact names.
 
 ### Objects the templates read
 
-**`profile`**: `name`, `first_name`, `initials`, `program`, `school`.
+**`profile`** - `name`, `first_name`, `initials`, `program`, `school`.
 
-**Item**: `id`, `name`, `category`, `condition` (New / Gently Used /
+**Item** - `id`, `name`, `category`, `condition` (New / Gently Used /
 Functional), `qty`, `paused`, `description`, `location`, `icon`, `tone`,
 `owner.profile`, `listing` (`give` or `lend`), `is_lend`, `lend_limit` and
 `get_lend_limit_display` (e.g. "Up to 2 weeks"), and `listing_label`
 ("Give away" or "Lend · Up to 2 weeks").
 
-**Request**: `id`, `name`, `category`, `note`, `needed_by` (date), `location`,
+**Request** - `id`, `name`, `category`, `note`, `needed_by` (date), `location`,
 `status` (one of `open`, `requested`, `matched`, `lent`, `returned`,
 `fulfilled`, `cancelled`, `declined`), `is_lend`, `borrow_from` and
 `return_by` (dates, for lent items), plus:
 
-- `status_label`: what to call the status. The seeker and the sharer see
+- `status_label` - what to call the status. The seeker and the sharer see
   different words (e.g. `requested` is "Requested" to the seeker and
   "Pending" to the sharer).
-- `condition_label`: "Any condition" or the preference.
-- `is_closed`: true for fulfilled, returned, cancelled and declined.
-- `other_party`: the other student's `profile`.
-- `meetup`: `None`, or an object with `location` and `label` (e.g. "Nov 3, 1:00 PM").
+- `condition_label` - "Any condition" or the preference.
+- `is_closed` - true for fulfilled, returned, cancelled and declined.
+- `other_party` - the other student's `profile`.
+- `meetup` - `None`, or an object with `location` and `label` (e.g. "Nov 3, 1:00 PM").
 
 ### Context for each page
 
-**`login.html`**: `mode` (`"login"` or `"signup"`) and `form`. Log in uses
+**`login.html`** - `mode` (`"login"` or `"signup"`) and `form`. Log in uses
 `email` and `password`. Sign up uses `name`, `email` (must end in `.edu.ph`),
 `program` (a choice field; the dropdown lists its choices), `password`,
 `confirm_password` and `agree` (the terms checkbox). Errors show under each
@@ -104,12 +104,12 @@ and digits, and matching passwords.
 | `open_modal` | `"share"` or `"request"` to reopen a popup with form errors |
 | `dashboard_url` | `reverse("dashboard")` |
 
-**`browse.html`**: `items`, `query`, `category`, `categories` (starting with
+**`browse.html`** - `items`, `query`, `category`, `categories` (starting with
 "All"), `mode` (`""`, `give` or `lend`), `posted` (dict of item id → "Posted
 today" etc.), `share_form`, `request_form`, `listing_choices`, `listing_hints`,
 `condition_prefs`, `max_note`, `open_modal`.
 
-**`item_detail.html`**: `item`, `requested` (true if you already asked for
+**`item_detail.html`** - `item`, `requested` (true if you already asked for
 it), `posted`, `today`, `borrow_form` (for lent items), and `open_request`
 (an open request this borrow will fill, when coming from "possible matches").
 The back end must check borrow dates: not in the past, return after borrow,
