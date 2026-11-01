@@ -9,6 +9,7 @@
 | `shelf/static/shelf/app.js` | Opens popups without reloading, "⋯" menus, "Show more", password toggle, toasts |
 | `shelf/static/shelf/icons.svg` | Lucide icons (lucide.dev, ISC license) |
 | `shelf/static/shelf/logo-mark.svg`, `shelf.png` | Logo and login illustration from Figma |
+| `shelf/static/shelf/ShareShelf_logo.png` | Full logo shown above the log in / sign up tabs |
 
 Every page works without JavaScript: popups also open from their URL
 (`?modal=share`, `?modal=request`, `?request=<id>`, `?accept=<id>`), and every
@@ -69,8 +70,13 @@ The back end has to supply the pieces below with these exact names.
 
 ### Context for each page
 
-**`login.html`**: `form` (fields `name`, `program`, `email`, `password`; shows
-`non_field_errors`), `mode` (`"login"` or `"signup"`).
+**`login.html`**: `mode` (`"login"` or `"signup"`) and `form`. Log in uses
+`email` and `password`. Sign up uses `name`, `email` (must end in `.edu.ph`),
+`program` (a choice field; the dropdown lists its choices), `password`,
+`confirm_password` and `agree` (the terms checkbox). Errors show under each
+field, and `non_field_errors` at the top. The password chips update in the
+browser, but the back end must check the same rules: 8+ characters, letters
+and digits, and matching passwords.
 
 **`dashboard.html`**:
 

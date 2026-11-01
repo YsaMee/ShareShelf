@@ -115,5 +115,23 @@ document.querySelectorAll('[data-toggle-password]').forEach((button) => {
   })
 })
 
+// ---------- Sign-up password rules ----------
+// The server checks the same rules; these chips just show progress while typing.
+document.querySelectorAll('[data-password-rules]').forEach((rules) => {
+  const form = rules.closest('form')
+  const password = form.querySelector('[data-password-role="new"]')
+  const confirm = form.querySelector('[data-password-role="confirm"]')
+  const checks = {
+    length: () => password.value.length >= 8,
+    mix: () => /[A-Za-z]/.test(password.value) && /\d/.test(password.value),
+    match: () => password.value !== '' && password.value === confirm.value,
+  }
+  const update = () =>
+    rules.querySelectorAll('[data-rule]').forEach((rule) => rule.classList.toggle('is-good', checks[rule.dataset.rule]()))
+  password.addEventListener('input', update)
+  confirm.addEventListener('input', update)
+  update()
+})
+
 // ---------- Toasts fade out ----------
 document.querySelectorAll('[data-toast]').forEach((toast) => setTimeout(() => toast.remove(), 2600))
