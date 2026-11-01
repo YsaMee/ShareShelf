@@ -25,9 +25,17 @@ function closeModal(modal) {
 
 document.addEventListener('click', (e) => {
   const opener = e.target.closest('[data-open]')
-  if (opener && openModal(opener.dataset.open)) {
-    e.preventDefault()
-    return
+  if (opener) {
+    // The Share | Request switch lives inside a popup: swap popups, keep where focus goes back to.
+    const current = opener.closest('[data-modal]')
+    const returnTo = current?._opener
+    if (document.querySelector(`[data-modal="${opener.dataset.open}"]`)) {
+      if (current) current.hidden = true
+      openModal(opener.dataset.open)
+      if (current) document.querySelector(`[data-modal="${opener.dataset.open}"]`)._opener = returnTo
+      e.preventDefault()
+      return
+    }
   }
   const closer = e.target.closest('[data-close]')
   if (closer) {
@@ -113,6 +121,24 @@ document.querySelectorAll('[data-toggle-password]').forEach((button) => {
     button.querySelector('[data-eye]').hidden = show
     button.querySelector('[data-eye-off]').hidden = !show
   })
+})
+
+// ---------- Share form: lending fields and quantity buttons ----------
+document.querySelectorAll('[data-share-form]').forEach((form) => {
+  const lendBox = form.querySelector('[data-lend-only]')
+  const update = () => (lendBox.hidden = form.querySelector('[data-listing]:checked')?.value !== 'lend')
+  form.querySelectorAll('[data-listing]').forEach((radio) => radio.addEventListener('change', update))
+  update()
+})
+
+document.querySelectorAll('[data-qty-input]').forEach((box) => {
+  const input = box.querySelector('input')
+  box.querySelectorAll('[data-step]').forEach((button) =>
+    button.addEventListener('click', () => {
+      const next = (Number(input.value) || 1) + Number(button.dataset.step)
+      input.value = Math.min(Number(input.max), Math.max(Number(input.min), next))
+    }),
+  )
 })
 
 // ---------- Sign-up password rules ----------

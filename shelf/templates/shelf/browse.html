@@ -17,9 +17,19 @@
         {% icon "search" 16 %}
         <input type="search" name="q" placeholder="Search supplies, categories..." value="{{ query }}" aria-label="Search supplies" />
         {% if category != "All" %}<input type="hidden" name="category" value="{{ category }}" />{% endif %}
+        {% if mode %}<input type="hidden" name="mode" value="{{ mode }}" />{% endif %}
       </form>
-      <form class="chips" method="get">
+      <form class="chips" method="get" aria-label="Give away or lend">
         {% if query %}<input type="hidden" name="q" value="{{ query }}" />{% endif %}
+        {% if category != "All" %}<input type="hidden" name="category" value="{{ category }}" />{% endif %}
+        <button type="submit" name="mode" value="" class="chip{% if not mode %} is-active{% endif %}" aria-pressed="{% if not mode %}true{% else %}false{% endif %}">All modes</button>
+        {% for value, label in listing_choices %}
+          <button type="submit" name="mode" value="{{ value }}" class="chip{% if mode == value %} is-active{% endif %}" aria-pressed="{% if mode == value %}true{% else %}false{% endif %}">{{ label }}</button>
+        {% endfor %}
+      </form>
+      <form class="chips" method="get" aria-label="Category">
+        {% if query %}<input type="hidden" name="q" value="{{ query }}" />{% endif %}
+        {% if mode %}<input type="hidden" name="mode" value="{{ mode }}" />{% endif %}
         {% for c in categories %}
           <button type="submit" name="category" value="{{ c }}" class="chip{% if c == category %} is-active{% endif %}"
                   {% if c == category %}aria-pressed="true"{% else %}aria-pressed="false"{% endif %}>{{ c|short_category }}</button>
@@ -39,7 +49,7 @@
           <a class="card item-card" href="{% url 'item_detail' item.id %}">
             <div class="item-card-top">
               {% item_icon item %}
-              <span class="status status-green">Available</span>
+              <span class="listing-tag{% if item.is_lend %} is-lend{% endif %}">{{ item.listing_label }}</span>
             </div>
             <strong>{{ item.name }}</strong>
             <span class="muted small">{{ item.category|short_category }} · {{ item.condition }}</span>
@@ -57,5 +67,6 @@
 {% endblock %}
 
 {% block modals %}
+  {% include "shelf/partials/share_modal.html" %}
   {% include "shelf/partials/request_modal.html" %}
 {% endblock %}

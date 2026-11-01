@@ -1,0 +1,5 @@
+{% comment %}The Share | Request switch at the top of the "New post" popup. Pass: active ("share" or "request").{% endcomment %}
+<nav class="segmented post-switch" aria-label="What are you posting?">
+  <a href="?modal=share" data-open="share" class="{% if active == 'share' %}is-active{% endif %}"{% if active == 'share' %} aria-current="true"{% endif %}>Share</a>
+  <a href="?modal=request" data-open="request" class="{% if active == 'request' %}is-active{% endif %}"{% if active == 'request' %} aria-current="true"{% endif %}>Request</a>
+</nav>

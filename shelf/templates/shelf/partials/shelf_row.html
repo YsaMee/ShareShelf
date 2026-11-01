@@ -4,7 +4,7 @@
   {% item_icon item %}
   <div class="row-text">
     <strong>{{ item.name }}</strong>
-    <span>{{ item.category|short_category }} · {{ item.condition }}</span>
+    <span>{{ item.category|short_category }} · {{ item.condition }} · <span class="listing-tag{% if item.is_lend %} is-lend{% endif %}">{{ item.listing_label }}</span></span>
     {% if item.location %}<span class="row-loc">{% icon "map-pin" 11 %} {{ item.location }}</span>{% endif %}
   </div>
   <form class="qty" method="post" action="{% url 'change_qty' item.id %}">
