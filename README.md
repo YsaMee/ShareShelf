@@ -1,4 +1,4 @@
-# ShareShelf front end
+# ShareShelf frontend
 
 | Path | Function |
 | --- | --- |
