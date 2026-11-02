@@ -1,0 +1,58 @@
+{% load shelf_tags %}
+{% comment %}
+  Sharer accepts an incoming request and sets where and when to meet.
+  Opens from ?accept=<id>; starts from what the requester asked for.
+{% endcomment %}
+<div class="modal-backdrop" data-modal="accept">
+  <div class="modal" style="max-width: 560px" role="dialog" aria-modal="true" aria-labelledby="accept-title">
+    {% with person=accept.other_party %}{% with name=person.first_name %}
+      {% include "shelf/partials/modal_header.html" with title_id="accept-title" eyebrow="Sharer" title="Accept "|add:name|add:"’s request" subtitle=accept.item.name close_href=dashboard_url %}
+      <div class="modal-body">
+        <form class="form" method="post" action="{% url 'accept_incoming' accept.id %}">
+          {% csrf_token %}
+          <div class="person">
+            <div class="avatar">{{ person.initials }}</div>
+            <div>
+              <strong>{{ person.name }}</strong>
+              <span class="muted small">{{ person.program }}{% if accept.needed_by %} · needs it by {{ accept.needed_by|nice_date }}{% endif %}</span>
+            </div>
+          </div>
+          {% if accept.note %}<p class="quote">“{{ accept.note }}”</p>{% endif %}
+
+          <label class="field">
+            <span class="field-label">Pickup Location <em>*</em></span>
+            {% include "shelf/partials/select.html" with field=accept_form.location icon="map-pin" %}
+          </label>
+
+          <div class="field-pair">
+            <label class="field">
+              <span class="field-label">Date <em>*</em></span>
+              <span class="input-wrap has-icon">
+                {% icon "calendar" 16 2 "input-icon" %}
+                <input class="input tinted" type="date" name="{{ accept_form.date.html_name }}"
+                       value="{{ accept_form.date.value|default:''|stringformat:'s' }}" required />
+              </span>
+              {% include "shelf/partials/field_error.html" with field=accept_form.date %}
+            </label>
+            <label class="field">
+              <span class="field-label">Time <em>*</em></span>
+              <span class="input-wrap has-icon">
+                {% icon "clock" 16 2 "input-icon" %}
+                <input class="input tinted" type="time" name="{{ accept_form.time.html_name }}"
+                       value="{{ accept_form.time.value|default:''|stringformat:'s'|slice:':5' }}" required />
+              </span>
+              {% include "shelf/partials/field_error.html" with field=accept_form.time %}
+            </label>
+          </div>
+
+          <p class="muted small">One unit will be set aside for {{ name }} until you hand it over.</p>
+
+          <div class="form-actions">
+            <a class="btn btn-text" href="{{ dashboard_url }}" data-close>Cancel</a>
+            <button type="submit" class="btn btn-primary">{% icon "circle-check" 15 %} Accept and set meetup</button>
+          </div>
+        </form>
+      </div>
+    {% endwith %}{% endwith %}
+  </div>
+</div>
