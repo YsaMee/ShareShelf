@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import transaction
+from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -89,7 +90,49 @@ def dashboard_view(request):
 
 @login_required(login_url='login')
 def browse_view(request):
-    return HttpResponse('Browse backend is not implemented yet.', status=501)
+    query = request.GET.get('q', '').strip()
+    category = request.GET.get('category', '').strip()
+    mode = request.GET.get('mode', '').strip()
+
+    # Classmates' items that are active and available
+    items_qs = Item.objects.filter(
+        paused=False, qty__gt=0
+    ).exclude(owner=request.user).select_related('owner', 'owner__profile')
+
+    if query:
+        items_qs = items_qs.filter(
+            Q(name__icontains=query) | Q(description__icontains=query)
+        )
+
+    if category and category != 'All':
+        items_qs = items_qs.filter(category=category)
+
+    if mode in ('give', 'lend'):
+        items_qs = items_qs.filter(listing=mode)
+
+    items = list(items_qs)
+
+    posted = {item.id: _posted_label(item.created_at) for item in items}
+    categories = ['All'] + [choice[0] for choice in Item.CATEGORY_CHOICES]
+
+    listing_ctx = _listing_context()
+
+    context = {
+        'items': items,
+        'query': query,
+        'category': category if category else 'All',
+        'categories': categories,
+        'mode': mode,
+        'posted': posted,
+        'share_form': ShareItemForm(),
+        'request_form': RequestPostForm(),
+        'listing_choices': listing_ctx['listing_choices'],
+        'listing_hints': listing_ctx['listing_hints'],
+        'condition_prefs': listing_ctx['condition_prefs'],
+        'max_note': listing_ctx['max_note'],
+        'open_modal': request.GET.get('modal', ''),
+    }
+    return render(request, 'shelf/browse.html', context)
 
 
 @login_required(login_url='login')
@@ -288,7 +331,6 @@ def ask_for_match_view(request, request_id, item_id):
     return redirect('dashboard')
 
 def _greeting_for_hour(hour):
-    """Functional style: a pure function maps an hour to a greeting."""
     if hour < 12:
         return 'Good morning'
     if hour < 17:
@@ -339,7 +381,6 @@ def _listing_context():
 
 def _dashboard_context(user, share_form=None, request_form=None, accept=None,
                        accept_form=None, handoff=None, open_modal=''):
-    """Procedural view helper: gather page data before rendering the dashboard."""
     today = timezone.localdate()
     all_items = list(Item.objects.filter(owner=user).select_related('owner', 'owner__profile'))
     incoming_requests = ShelfRequest.objects.filter(
