@@ -2,11 +2,11 @@ import re
 from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
-from .models import PROGRAM_CHOICES
+from .models import Item, PROGRAM_CHOICES, Request
 
 class LoginForm(forms.Form):
     email = forms.EmailField(
-        widget=forms.EmailInput(attrs={'placeholder': 'you@school.edu'})
+         widget=forms.EmailInput(attrs={'placeholder': 'you@school.edu'})
     )
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={'placeholder': 'Password'})
@@ -44,3 +44,64 @@ class SignUpForm(forms.Form):
         if password and confirm_password and password != confirm_password:
             self.add_error('confirm_password', "Passwords do not match.")
         return cleaned_data
+
+
+class ShareItemForm(forms.ModelForm):
+    """OOP form: validates item input against the Item model."""
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('initial', {'listing': 'give', 'condition': 'Gently Used', 'qty': 1})
+        super().__init__(*args, **kwargs)
+
+    class Meta:
+        model = Item
+        fields = ('listing', 'name', 'qty', 'category', 'condition', 'lend_limit', 'location', 'description')
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'e.g. TI-84 Plus CE Graphing Calculator'}),
+            'qty': forms.NumberInput(attrs={'min': 1, 'max': 20}),
+            'description': forms.Textarea(attrs={'rows': 3, 'maxlength': 500}),
+        }
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get('listing') == 'lend' and not cleaned.get('lend_limit'):
+            self.add_error('lend_limit', 'Choose a maximum lending duration.')
+        if cleaned.get('listing') == 'give':
+            cleaned['lend_limit'] = None
+        return cleaned
+
+
+class RequestPostForm(forms.ModelForm):
+    """OOP form for posting an item request."""
+
+    needed_by = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+    location = forms.ChoiceField(choices=Item.LOCATION_CHOICES)
+
+    class Meta:
+        model = Request
+        fields = ('name', 'category', 'preference', 'note', 'needed_by', 'location')
+        widgets = {
+            'name': forms.TextInput(attrs={'maxlength': 80}),
+            'note': forms.Textarea(attrs={'rows': 3, 'maxlength': 200}),
+            'needed_by': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+    def clean_needed_by(self):
+        needed_by = self.cleaned_data['needed_by']
+        from django.utils import timezone
+        if needed_by < timezone.localdate():
+            raise ValidationError('Needed-by date cannot be in the past.')
+        return needed_by
+
+
+class AcceptIncomingForm(forms.Form):
+    location = forms.ChoiceField(choices=Item.LOCATION_CHOICES)
+    date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+    time = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}))
+
+    def clean_date(self):
+        from django.utils import timezone
+        meetup_date = self.cleaned_data['date']
+        if meetup_date < timezone.localdate():
+            raise ValidationError('Meetup date cannot be in the past.')
+        return meetup_date

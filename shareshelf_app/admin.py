@@ -1,3 +1,4 @@
 from django.contrib import admin
+from .models import Item, Request, UserProfile
 
-# Register your models here.
+admin.site.register((UserProfile, Item, Request))
