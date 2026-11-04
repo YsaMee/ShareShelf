@@ -1,13 +1,8 @@
 {% load shelf_tags %}
-{% comment %}
-  "Edit profile" popup. It's on every logged-in page (app.html) and opens from the
-  profile menu, the Settings page, or ?modal=profile. Needs profile_form.
-  Cancel and X throw away unsaved changes.
-{% endcomment %}
 {% with f=profile_form %}
 <div class="modal-backdrop" data-modal="profile" {% if open_modal != "profile" and request.GET.modal != "profile" %}hidden{% endif %}>
   <div class="modal profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-title">
-    <form class="profile-form" method="post" action="{% url 'settings' %}" novalidate data-profile-form>
+    <form class="profile-form" method="post" action="{% url 'settings' %}" enctype="multipart/form-data" novalidate data-profile-form>
       {% csrf_token %}
       <input type="hidden" name="next" value="{{ request.path }}" />
 
@@ -22,6 +17,28 @@
 
       <div class="profile-modal-body">
         {% if f.non_field_errors %}<p class="form-error" role="alert">{{ f.non_field_errors.0 }}</p>{% endif %}
+
+        <div class="avatar-picker" data-avatar-picker>
+          <span class="avatar avatar-xl avatar-camera">
+            <span data-avatar-preview>{% if profile.avatar %}<img src="{{ profile.avatar.url }}" alt="" />{% else %}{{ profile.initials }}{% endif %}</span>
+            <span class="avatar-badge">{% icon "camera" 12 %}</span>
+          </span>
+          <template data-avatar-initials>{{ profile.initials }}</template>
+          <div class="avatar-picker-text">
+            <div class="avatar-actions">
+              <label class="soft-chip">
+                {% icon "upload" 14 %} Change avatar
+                <input class="visually-hidden" type="file" name="{{ f.avatar.html_name }}" accept="image/jpeg,image/png" data-avatar-input />
+              </label>
+              <label class="text-chip"{% if not profile.avatar %} hidden{% endif %} data-avatar-remove>
+                <input class="visually-hidden" type="checkbox" name="{{ f.avatar.html_name }}-clear" />
+                Remove
+              </label>
+            </div>
+            <span class="small muted">Recommended square JPG or PNG, max 2MB.</span>
+            <span class="field-error" data-avatar-error{% if not f.avatar.errors %} hidden{% endif %}>{{ f.avatar.errors.0 }}</span>
+          </div>
+        </div>
 
         <div class="field-pair">
           <label class="field">

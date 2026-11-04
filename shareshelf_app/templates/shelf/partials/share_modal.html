@@ -1,8 +1,4 @@
 {% load shelf_tags %}
-{% comment %}
-  "New post", Share side (the Sharer's Form in Figma). Opens from any
-  [data-open="share"] button, or ?modal=share. The switch swaps to request_modal.
-{% endcomment %}
 <div class="modal-backdrop" data-modal="share" {% if open_modal != "share" %}hidden{% endif %}>
   <div class="modal" style="max-width: 640px" role="dialog" aria-modal="true" aria-labelledby="share-title">
     {% include "shelf/partials/modal_header.html" with title_id="share-title" eyebrow="Campus mutual aid" title="Share an Item" subtitle="Pass forward extra stationery, drafting tools, or equipment to peers." %}

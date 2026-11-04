@@ -26,7 +26,7 @@
         {% avatar profile "lg" %}
         <div>
           <strong>{{ profile.name }}</strong>
-          <span class="muted small">{{ profile.program }}{% if profile.year_level %} · {{ profile.get_year_level_display }}{% endif %} · {{ profile.school }}</span>
+          <span class="muted small">{{ profile|program_year }} · {{ profile.school }}</span>
         </div>
       </div>
 

@@ -1,5 +1,4 @@
 {% load shelf_tags %}
-{% comment %}"New post", Request side. Opens from any [data-open="request"] button, or ?modal=request. The switch swaps to share_modal.{% endcomment %}
 <div class="modal-backdrop" data-modal="request" {% if open_modal != "request" %}hidden{% endif %}>
   <div class="modal" style="max-width: 672px" role="dialog" aria-modal="true" aria-labelledby="request-title">
     {% include "shelf/partials/modal_header.html" with title_id="request-title" eyebrow="Seeker" community=profile.school|add:" Community" title="Request an Item" subtitle="Ask fellow students for supplies you need this term." %}

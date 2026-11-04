@@ -1,5 +1,4 @@
 {% load shelf_tags %}
-{% comment %}One item on your shelf. Expects row (a ShelfRow) and item (row.item).{% endcomment %}
 <li class="row{% if item.paused %} is-paused{% endif %}{% if forloop.counter > shelf_limit %} is-extra{% endif %}">
   {% item_icon item %}
   <div class="row-text">

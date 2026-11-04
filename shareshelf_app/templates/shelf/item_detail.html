@@ -49,7 +49,6 @@
               </div>
             </div>
           {% elif item.qty > 0 and not item.paused and item.is_lend %}
-            {% comment %}The borrower's form. rules.pl checks the dates against the lending limit.{% endcomment %}
             <form class="form borrow-form" method="post" action="{% url 'request_item' item.id %}">
               {% csrf_token %}
               {% if open_request %}<input type="hidden" name="open_request" value="{{ open_request.id }}" />{% endif %}
@@ -83,7 +82,6 @@
               <button type="submit" class="btn btn-primary btn-block">{% icon "send" 16 %} Request this item</button>
             </form>
           {% endif %}
-          <button type="button" class="btn btn-ghost btn-block">{% icon "message-circle" 16 %} Message {{ item.owner.profile.first_name }}</button>
         </article>
         <div class="privacy-card">
           <div class="privacy-icon">{% icon "shield-check" 16 %}</div>

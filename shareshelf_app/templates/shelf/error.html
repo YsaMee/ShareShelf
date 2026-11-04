@@ -1,6 +1,5 @@
 {% extends "shelf/base.html" %}
 {% load static shelf_tags %}
-{% comment %}Layout for 403, 404 and 500. Django renders 500 without a request, so this page reads nothing from the context.{% endcomment %}
 {% block body %}
   <main class="error-page">
     <img class="brand-logo" src="{% static 'shelf/ShareShelf_logo.png' %}" alt="ShareShelf — Share, Seek, Support" width="368" height="101" />

@@ -60,7 +60,8 @@ The back end has to supply the pieces below with these exact names.
 
 ### Objects the templates read
 
-**`profile`**: `name`, `first_name`, `initials`, `program`, `school`, plus for Edit profile:
+**`profile`**: `name`, `first_name`, `initials`, `program` (with choices, so
+`get_program_display` gives the full name shown to classmates), `school`, plus for Edit profile:
 `full_name`, `display_name`, `avatar` (an `ImageField`; empty means initials are shown),
 `year_level` and `get_year_level_display`, `bio`, `pickup_spot`. Templates show `name`
 everywhere, so make `name` return the display name when it's set and the full name otherwise.

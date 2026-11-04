@@ -1,8 +1,10 @@
 import re
 from django import forms
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
+from . import logic
 from .models import Item, PROGRAM_CHOICES, Request, UserProfile, LOCATION_CHOICES, YEAR_LEVEL_CHOICES
 
 class LoginForm(forms.Form):
@@ -147,25 +149,23 @@ class BorrowForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.item = item
 
-    def clean_borrow_from(self):
-        borrow_from = self.cleaned_data.get('borrow_from')
-        if borrow_from and borrow_from < timezone.localdate():
-            raise ValidationError('Borrow start date cannot be in the past.')
-        return borrow_from
-
     def clean(self):
+        """The date rules live in logic/rules.pl (loan_problem/5); this only words the answers."""
         cleaned_data = super().clean()
         borrow_from = cleaned_data.get('borrow_from')
         return_by = cleaned_data.get('return_by')
+        if not (borrow_from and return_by):
+            return cleaned_data
 
-        if borrow_from and return_by:
-            if return_by <= borrow_from:
-                self.add_error('return_by', 'Return date must be after the borrow start date.')
-            elif self.item and self.item.lend_limit:
-                days = (return_by - borrow_from).days
-                if days > self.item.lend_limit:
-                    limit_label = self.item.get_lend_limit_display().lower()
-                    self.add_error('return_by', f'Exceeds lending limit of {limit_label} ({self.item.lend_limit} days).')
+        limit_days = self.item.lend_limit if self.item else None
+        problems = logic.loan_problems(limit_days, borrow_from, return_by, timezone.localdate())
+        if 'starts_in_past' in problems:
+            self.add_error('borrow_from', 'Borrow start date cannot be in the past.')
+        if 'ends_before_start' in problems:
+            self.add_error('return_by', 'Return date must be after the borrow start date.')
+        if 'too_long' in problems:
+            limit_label = self.item.get_lend_limit_display().lower()
+            self.add_error('return_by', f'Exceeds lending limit of {limit_label} ({limit_days} days).')
         return cleaned_data
 
 class ProfileForm(forms.ModelForm):
