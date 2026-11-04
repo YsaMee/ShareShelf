@@ -105,3 +105,46 @@ class AcceptIncomingForm(forms.Form):
         if meetup_date < timezone.localdate():
             raise ValidationError('Meetup date cannot be in the past.')
         return meetup_date
+
+
+class BorrowForm(forms.Form):
+    prefix = 'borrow'
+
+    borrow_from = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'}),
+        error_messages={'required': 'Please select a start date.'}
+    )
+    return_by = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'}),
+        error_messages={'required': 'Please select a return date.'}
+    )
+    note = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={'rows': 3, 'maxlength': 200, 'placeholder': 'Add an optional note to the item owner...'})
+    )
+    open_request = forms.IntegerField(required=False, widget=forms.HiddenInput())
+
+    def __init__(self, *args, item=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.item = item
+
+    def clean_borrow_from(self):
+        borrow_from = self.cleaned_data.get('borrow_from')
+        if borrow_from and borrow_from < timezone.localdate():
+            raise ValidationError('Borrow start date cannot be in the past.')
+        return borrow_from
+
+    def clean(self):
+        cleaned_data = super().clean()
+        borrow_from = cleaned_data.get('borrow_from')
+        return_by = cleaned_data.get('return_by')
+
+        if borrow_from and return_by:
+            if return_by <= borrow_from:
+                self.add_error('return_by', 'Return date must be after the borrow start date.')
+            elif self.item and self.item.lend_limit:
+                days = (return_by - borrow_from).days
+                if days > self.item.lend_limit:
+                    limit_label = self.item.get_lend_limit_display().lower()
+                    self.add_error('return_by', f'Exceeds lending limit of {limit_label} ({self.item.lend_limit} days).')
+        return cleaned_data

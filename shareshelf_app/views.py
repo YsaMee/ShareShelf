@@ -11,6 +11,7 @@ from django.views.decorators.http import require_POST
 
 from .forms import (
     AcceptIncomingForm,
+    BorrowForm,
     LoginForm,
     RequestPostForm,
     ShareItemForm,
@@ -137,7 +138,54 @@ def browse_view(request):
 
 @login_required(login_url='login')
 def item_detail_view(request, item_id):
-    return HttpResponse('Item detail backend is not implemented yet.', status=501)
+    item = get_object_or_404(
+        Item.objects.select_related('owner', 'owner__profile'),
+        pk=item_id
+    )
+
+    # Check if current user has an active request for this item
+    requested = ShelfRequest.objects.filter(
+        item=item,
+        requester=request.user,
+        status__in=('requested', 'matched', 'lent')
+    ).exists()
+
+    # Get optional open request if coming from matches
+    open_req_id = request.GET.get('open_request') or request.GET.get('request')
+    open_request = None
+    if open_req_id:
+        open_request = ShelfRequest.objects.filter(
+            pk=open_req_id,
+            requester=request.user,
+            status='open'
+        ).first()
+
+    # Initialize borrow form for lent items
+    borrow_form = None
+    if item.is_lend:
+        initial_data = {}
+        if open_request:
+            initial_data['open_request'] = open_request.id
+        borrow_form = BorrowForm(item=item, initial=initial_data)
+
+    listing_ctx = _listing_context()
+
+    context = {
+        'item': item,
+        'requested': requested,
+        'posted': _posted_label(item.created_at),
+        'today': timezone.localdate(),
+        'borrow_form': borrow_form,
+        'open_request': open_request,
+        'share_form': ShareItemForm(),
+        'request_form': RequestPostForm(),
+        'listing_choices': listing_ctx['listing_choices'],
+        'listing_hints': listing_ctx['listing_hints'],
+        'condition_prefs': listing_ctx['condition_prefs'],
+        'max_note': listing_ctx['max_note'],
+        'open_modal': request.GET.get('modal', ''),
+    }
+    return render(request, 'shelf/item_detail.html', context)
 
 
 @login_required(login_url='login')
@@ -174,7 +222,100 @@ def post_request_view(request):
 @login_required(login_url='login')
 @require_POST
 def request_item_view(request, item_id):
-    return HttpResponse('Requesting items through Browse is not implemented yet.', status=501)
+    item = get_object_or_404(Item, pk=item_id, paused=False, qty__gt=0)
+
+    if item.owner == request.user:
+        messages.error(request, "You cannot request your own item.")
+        return redirect('item_detail', item_id=item.id)
+
+    already_requested = ShelfRequest.objects.filter(
+        item=item,
+        requester=request.user,
+        status__in=('requested', 'matched', 'lent')
+    ).exists()
+
+    if already_requested:
+        messages.info(request, "You have already requested this item.")
+        return redirect('item_detail', item_id=item.id)
+
+    if item.is_lend:
+        form = BorrowForm(request.POST, item=item)
+        if not form.is_valid():
+            open_req_id = form.data.get('open_request') or request.POST.get('open_request')
+            open_request = None
+            if open_req_id:
+                open_request = ShelfRequest.objects.filter(pk=open_req_id, requester=request.user, status='open').first()
+
+            listing_ctx = _listing_context()
+            context = {
+                'item': item,
+                'requested': False,
+                'posted': _posted_label(item.created_at),
+                'today': timezone.localdate(),
+                'borrow_form': form,
+                'open_request': open_request,
+                'share_form': ShareItemForm(),
+                'request_form': RequestPostForm(),
+                'listing_choices': listing_ctx['listing_choices'],
+                'listing_hints': listing_ctx['listing_hints'],
+                'condition_prefs': listing_ctx['condition_prefs'],
+                'max_note': listing_ctx['max_note'],
+                'open_modal': '',
+            }
+            return render(request, 'shelf/item_detail.html', context)
+
+        # Valid Borrow Form
+        borrow_from = form.cleaned_data['borrow_from']
+        return_by = form.cleaned_data['return_by']
+        note = form.cleaned_data['note']
+        open_req_id = form.cleaned_data.get('open_request')
+
+        if open_req_id:
+            shelf_request = get_object_or_404(ShelfRequest, pk=open_req_id, requester=request.user, status='open')
+            shelf_request.item = item
+            shelf_request.is_lend = True
+            shelf_request.borrow_from = borrow_from
+            shelf_request.return_by = return_by
+            shelf_request.note = note or shelf_request.note
+            shelf_request.status = 'requested'
+            shelf_request.save()
+        else:
+            ShelfRequest.objects.create(
+                requester=request.user,
+                item=item,
+                name=item.name,
+                category=item.category,
+                note=note,
+                status='requested',
+                is_lend=True,
+                borrow_from=borrow_from,
+                return_by=return_by,
+                location=item.location
+            )
+        messages.success(request, f"Borrow request for '{item.name}' sent to owner.")
+
+    else:
+        # Give Away Item
+        open_req_id = request.POST.get('open_request')
+        if open_req_id:
+            shelf_request = get_object_or_404(ShelfRequest, pk=open_req_id, requester=request.user, status='open')
+            shelf_request.item = item
+            shelf_request.is_lend = False
+            shelf_request.status = 'requested'
+            shelf_request.save()
+        else:
+            ShelfRequest.objects.create(
+                requester=request.user,
+                item=item,
+                name=item.name,
+                category=item.category,
+                status='requested',
+                is_lend=False,
+                location=item.location
+            )
+        messages.success(request, f"Request for '{item.name}' sent to owner.")
+
+    return redirect('item_detail', item_id=item.id)
 
 
 @login_required(login_url='login')
