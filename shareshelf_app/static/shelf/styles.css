@@ -526,3 +526,6 @@ fieldset.field legend { padding: 0; margin-bottom: 6px; width: 100%; }
   .year-choice span { padding: 10px 4px; font-size: 13px; }
   .avatar-picker { align-items: flex-start; }
 }
+
+/* A classmate's "About you" line under their name */
+.person-bio { margin-top: 4px; font-size: 12px; line-height: 17px; color: var(--body); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }

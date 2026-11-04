@@ -36,7 +36,8 @@
             {% avatar item.owner.profile %}
             <div>
               <strong>{{ item.owner.profile.name }}</strong>
-              <span class="muted small">{{ item.owner.profile.program }}</span>
+              <span class="muted small">{{ item.owner.profile|program_year }}</span>
+              {% include "shelf/partials/person_bio.html" with person=item.owner.profile %}
             </div>
           </div>
           {% if requested %}

@@ -6,7 +6,7 @@
       {% avatar person "sm" %}
       <div class="incoming-text">
         <span><strong>{{ person.name }}</strong> {% if r.status == "lent" %}has{% elif r.is_lend %}wants to borrow{% else %}wants{% endif %} <strong>{{ item.name|default:r.name }}</strong></span>
-        <span class="faint small">{{ person.program }}{% if person.program %} · {% endif %}{{ row.posted }}</span>
+        <span class="faint small">{% with line=person|program_year %}{% if line %}{{ line }} · {% endif %}{% endwith %}{{ row.posted }}</span>
       </div>
       {% status_badge r.status_label pill=True %}
     </div>

@@ -140,8 +140,9 @@ student's profile). Fields:
 | --- | --- |
 | `avatar` | `ImageField`. JPG or PNG, 2MB max: the browser checks, but the server must check again. The Remove link sends `avatar-clear`, which a `ModelForm` handles for you. Needs `MEDIA_URL` / `MEDIA_ROOT` and Pillow |
 | `full_name`, `display_name` | both required |
-| `school`, `program`, `pickup_spot` | choice fields; the dropdowns list their choices. Add a blank choice to `pickup_spot` if it's optional |
-| `year_level` | choice field, one button per choice (BS Architecture runs five years, so include a 5th Year) |
+| `school`, `program`, `pickup_spot` | choice fields; the dropdowns list their choices. Add a blank choice to `pickup_spot` if it's optional. Give `pickup_spot` the same choices as `Item.location`: the "New post" forms start on the student's saved spot, which only works if it's one of their options |
+| `year_level` | choice field, one button per choice (BS Architecture runs five years, so include a 5th Year). Put the choices on the model field so `get_year_level_display` exists: classmates see "BS Architecture · 3rd Year" |
+| `bio` | shown under the student's name on their items, and in the accept and handoff popups |
 | `bio` | 300 characters max |
 
 On success, redirect to the posted `next` (check it with `url_has_allowed_host_and_scheme`).

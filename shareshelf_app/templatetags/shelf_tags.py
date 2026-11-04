@@ -81,6 +81,18 @@ def lookup(mapping, key):
 
 
 @register.filter
+def program_year(person):
+    """"BS Architecture · 3rd Year", or just the program if no year is set."""
+    if not person:
+        return ""
+    parts = [getattr(person, "program", "") or ""]
+    year_display = getattr(person, "get_year_level_display", None)
+    if getattr(person, "year_level", None) and callable(year_display):
+        parts.append(year_display())
+    return " · ".join(p for p in parts if p)
+
+
+@register.filter
 def short_category(category):
     """"Drafting & Arts (Architecture, Fine Arts)" -> "Drafting & Arts" """
     return (category or "").split(" (")[0]

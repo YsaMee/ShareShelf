@@ -17,7 +17,8 @@
               {% avatar person %}
               <div>
                 <strong>{{ person.name }}</strong>
-                <span class="muted small">lent this to you</span>
+                <span class="muted small">{% with line=person|program_year %}{% if line %}{{ line }} · {% endif %}{% endwith %}lent this to you</span>
+                {% include "shelf/partials/person_bio.html" %}
               </div>
             </div>
             <div class="meetup{% if handoff_overdue %} is-overdue{% endif %}">
@@ -35,7 +36,8 @@
               {% avatar person %}
               <div>
                 <strong>{{ person.name }}</strong>
-                <span class="muted small">{{ person.program }}{% if person.program %} · {% endif %}has this item for you</span>
+                <span class="muted small">{% with line=person|program_year %}{% if line %}{{ line }} · {% endif %}{% endwith %}has this item for you</span>
+                {% include "shelf/partials/person_bio.html" %}
               </div>
             </div>
             <ol class="steps">
