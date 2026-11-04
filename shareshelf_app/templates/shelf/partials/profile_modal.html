@@ -1,9 +1,4 @@
 {% load shelf_tags %}
-{% comment %}
-  "Edit profile" popup. It's on every logged-in page (app.html) and opens from the
-  profile menu, the Settings page, or ?modal=profile. Needs profile_form.
-  Cancel and X throw away unsaved changes, including a picked photo.
-{% endcomment %}
 {% with f=profile_form %}
 <div class="modal-backdrop" data-modal="profile" {% if open_modal != "profile" and request.GET.modal != "profile" %}hidden{% endif %}>
   <div class="modal profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-title">
@@ -23,7 +18,6 @@
       <div class="profile-modal-body">
         {% if f.non_field_errors %}<p class="form-error" role="alert">{{ f.non_field_errors.0 }}</p>{% endif %}
 
-        {# Photo: preview updates in the browser; the server checks type and size too. #}
         <div class="avatar-picker" data-avatar-picker>
           <span class="avatar avatar-xl avatar-camera">
             <span data-avatar-preview>{% if profile.avatar %}<img src="{{ profile.avatar.url }}" alt="" />{% else %}{{ profile.initials }}{% endif %}</span>

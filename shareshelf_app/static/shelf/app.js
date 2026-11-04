@@ -1,8 +1,3 @@
-// Small enhancements on top of plain Django pages. Everything still works
-// without this file: popups open from links like ?modal=share, and every
-// action is a normal form post.
-
-// ---------- Popups ----------
 const focusable = 'input:not([type=hidden]), select, textarea, button, a[href]'
 
 function openModal(name) {
@@ -17,10 +12,8 @@ function openModal(name) {
 
 function closeModal(modal) {
   modal.hidden = true
-  // Cancel means cancel: the profile popup forgets unsaved edits and a picked photo.
   modal.querySelector('[data-profile-form]')?.reset()
   modal._opener?.focus()
-  // Drop ?modal=, ?request= or ?accept= so a refresh doesn't reopen it.
   const url = new URL(window.location)
   ;['modal', 'request', 'accept'].forEach((key) => url.searchParams.delete(key))
   history.replaceState(null, '', url)
@@ -29,7 +22,6 @@ function closeModal(modal) {
 document.addEventListener('click', (e) => {
   const opener = e.target.closest('[data-open]')
   if (opener) {
-    // The Share | Request switch lives inside a popup: swap popups, keep where focus goes back to.
     const current = opener.closest('[data-modal]')
     const returnTo = current?._opener
     if (document.querySelector(`[data-modal="${opener.dataset.open}"]`)) {
@@ -47,7 +39,6 @@ document.addEventListener('click', (e) => {
   }
 })
 
-// Clicking the dark backdrop (not the popup itself) closes it.
 document.addEventListener('mousedown', (e) => {
   if (e.target.matches('[data-modal]')) closeModal(e.target)
 })
@@ -58,7 +49,6 @@ document.addEventListener('keydown', (e) => {
     if (open) closeModal(open)
     document.querySelectorAll('details.menu[open]').forEach((m) => m.removeAttribute('open'))
   }
-  // Keep Tab inside an open popup.
   if (e.key === 'Tab') {
     const open = document.querySelector('[data-modal]:not([hidden]) .modal')
     if (!open) return
@@ -75,19 +65,15 @@ document.addEventListener('keydown', (e) => {
   }
 })
 
-// A popup the server opened (form errors, ?accept=...) gets focus on load.
 const serverOpened = document.querySelector('[data-modal]:not([hidden])')
 ;(serverOpened?.querySelector('[data-autofocus]') || serverOpened?.querySelector('.modal-body ' + focusable))?.focus()
 
-// ---------- "..." menus ----------
-// Only one open at a time; clicking anywhere else closes it.
 document.addEventListener('click', (e) => {
   document.querySelectorAll('details.menu[open]').forEach((menu) => {
     if (!menu.contains(e.target)) menu.removeAttribute('open')
   })
 })
 
-// ---------- Show more ----------
 document.querySelectorAll('[data-show-more]').forEach((button) => {
   const list = document.getElementById(button.dataset.showMore)
   const label = button.querySelector('[data-label]')
@@ -99,7 +85,6 @@ document.querySelectorAll('[data-show-more]').forEach((button) => {
   })
 })
 
-// ---------- Request form: condition hint and note counter ----------
 document.querySelectorAll('[data-condition]').forEach((card) => {
   const select = card.querySelector('select')
   select.addEventListener('change', () => {
@@ -113,7 +98,6 @@ document.querySelectorAll('[data-count-for]').forEach((counter) => {
   field?.addEventListener('input', () => (counter.textContent = field.value.length))
 })
 
-// ---------- Password show / hide ----------
 document.querySelectorAll('[data-toggle-password]').forEach((button) => {
   const input = button.parentElement.querySelector('[data-password]')
   button.addEventListener('click', () => {
@@ -126,7 +110,6 @@ document.querySelectorAll('[data-toggle-password]').forEach((button) => {
   })
 })
 
-// ---------- Share form: lending fields and quantity buttons ----------
 document.querySelectorAll('[data-share-form]').forEach((form) => {
   const lendBox = form.querySelector('[data-lend-only]')
   const update = () => (lendBox.hidden = form.querySelector('[data-listing]:checked')?.value !== 'lend')
@@ -144,8 +127,6 @@ document.querySelectorAll('[data-qty-input]').forEach((box) => {
   )
 })
 
-// ---------- Sign-up password rules ----------
-// The server checks the same rules; these chips just show progress while typing.
 document.querySelectorAll('[data-password-rules]').forEach((rules) => {
   const form = rules.closest('form')
   const password = form.querySelector('[data-password-role="new"]')
@@ -162,8 +143,6 @@ document.querySelectorAll('[data-password-rules]').forEach((rules) => {
   update()
 })
 
-// ---------- Edit profile: photo preview ----------
-// The server checks type and size too; this just catches mistakes before uploading.
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024
 
 document.querySelectorAll('[data-avatar-picker]').forEach((picker) => {
@@ -207,7 +186,7 @@ document.querySelectorAll('[data-avatar-picker]').forEach((picker) => {
     forgetUpload()
     objectUrl = URL.createObjectURL(file)
     showImage(objectUrl)
-    clear.checked = false // Django rejects "new photo" and "remove" together
+    clear.checked = false
     removeLabel.hidden = false
   })
 
@@ -220,7 +199,6 @@ document.querySelectorAll('[data-avatar-picker]').forEach((picker) => {
     removeLabel.hidden = true
   })
 
-  // Cancel / X reset the form; put the photo and counters back the way they were.
   form.addEventListener('reset', () =>
     setTimeout(() => {
       forgetUpload()
@@ -232,5 +210,4 @@ document.querySelectorAll('[data-avatar-picker]').forEach((picker) => {
   )
 })
 
-// ---------- Toasts fade out ----------
 document.querySelectorAll('[data-toast]').forEach((toast) => setTimeout(() => toast.remove(), 2600))

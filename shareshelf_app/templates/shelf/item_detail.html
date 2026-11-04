@@ -49,7 +49,6 @@
               </div>
             </div>
           {% elif item.qty > 0 and not item.paused and item.is_lend %}
-            {% comment %}The borrower's form. rules.pl (loan_problem/5) checks the dates against the lending limit.{% endcomment %}
             <form class="form borrow-form" method="post" action="{% url 'request_item' item.id %}">
               {% csrf_token %}
               {% if open_request %}<input type="hidden" name="open_request" value="{{ open_request.id }}" />{% endif %}
