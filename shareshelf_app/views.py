@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import Q
-from django.http import HttpResponse, request
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
@@ -20,7 +20,8 @@ from .forms import (
     ProfileForm,
     ShelfPasswordChangeForm,
 )
-from .models import Item, Request as ShelfRequest, UserProfile, item_matches_request
+from . import logic
+from .models import Item, Request as ShelfRequest, UserProfile
 
 
 def profile_context(request):
@@ -120,7 +121,10 @@ def dashboard_view(request):
     if request_id:
         handoff = get_object_or_404(ShelfRequest, pk=request_id, requester=request.user)
         context['handoff'] = _mark_request_viewer(handoff, request.user)
-        context['handoff_matches'] = _matching_items(handoff)[:6] if handoff.status == 'open' else []
+        context['handoff_matches'] = _matching_items(handoff) if handoff.status == 'open' else []
+        context['handoff_overdue'] = handoff.status == 'lent' and handoff.pk in logic.find_overdue(
+            [handoff], timezone.localdate()
+        )
     return render(request, 'shelf/dashboard.html', context)
 
 
@@ -307,6 +311,9 @@ def request_item_view(request, item_id):
 
         if open_req_id:
             shelf_request = get_object_or_404(ShelfRequest, pk=open_req_id, requester=request.user, status='open')
+            if logic.allowed_qty(shelf_request, 'seeker', 'requested') is None:
+                messages.error(request, 'This request can no longer be sent.')
+                return redirect('item_detail', item_id=item.id)
             shelf_request.item = item
             shelf_request.is_lend = True
             shelf_request.borrow_from = borrow_from
@@ -334,6 +341,9 @@ def request_item_view(request, item_id):
         open_req_id = request.POST.get('open_request')
         if open_req_id:
             shelf_request = get_object_or_404(ShelfRequest, pk=open_req_id, requester=request.user, status='open')
+            if logic.allowed_qty(shelf_request, 'seeker', 'requested') is None:
+                messages.error(request, 'This request can no longer be sent.')
+                return redirect('item_detail', item_id=item.id)
             shelf_request.item = item
             shelf_request.is_lend = False
             shelf_request.status = 'requested'
@@ -408,10 +418,11 @@ def accept_incoming_view(request, request_id):
             item__owner=request.user, status='requested',
         )
         item = Item.objects.select_for_update().get(pk=shelf_request.item_id)
-        if item.paused or item.qty < 1:
+        new_qty = logic.allowed_qty(shelf_request, 'sharer', 'matched', item)
+        if new_qty is None:
             messages.error(request, 'This item is no longer available to accept.')
             return redirect('dashboard')
-        item.qty -= 1
+        item.qty = new_qty
         item.save(update_fields=['qty'])
         shelf_request.status = 'matched'
         shelf_request.meetup_location = form.cleaned_data['location']
@@ -426,6 +437,9 @@ def accept_incoming_view(request, request_id):
 @require_POST
 def decline_incoming_view(request, request_id):
     shelf_request = get_object_or_404(ShelfRequest, pk=request_id, item__owner=request.user, status='requested')
+    if logic.allowed_qty(shelf_request, 'sharer', 'declined', shelf_request.item) is None:
+        messages.error(request, 'This request can no longer be declined.')
+        return redirect('dashboard')
     shelf_request.status = 'declined'
     shelf_request.save(update_fields=['status', 'updated_at'])
     messages.success(request, 'Request declined.')
@@ -436,7 +450,11 @@ def decline_incoming_view(request, request_id):
 @require_POST
 def complete_incoming_view(request, request_id):
     shelf_request = get_object_or_404(ShelfRequest, pk=request_id, item__owner=request.user, status='matched')
-    shelf_request.status = 'lent' if shelf_request.is_lend else 'fulfilled'
+    target = 'lent' if shelf_request.is_lend else 'fulfilled'
+    if logic.allowed_qty(shelf_request, 'sharer', target, shelf_request.item) is None:
+        messages.error(request, 'This handoff can no longer be completed.')
+        return redirect('dashboard')
+    shelf_request.status = target
     shelf_request.save(update_fields=['status', 'updated_at'])
     messages.success(request, 'Loan started.' if shelf_request.is_lend else 'Handoff marked complete.')
     return redirect('dashboard')
@@ -450,7 +468,11 @@ def mark_returned_view(request, request_id):
             ShelfRequest.objects.select_for_update(), pk=request_id, item__owner=request.user, status='lent'
         )
         item = Item.objects.select_for_update().get(pk=shelf_request.item_id)
-        item.qty = min(item.qty + 1, 20)
+        new_qty = logic.allowed_qty(shelf_request, 'sharer', 'returned', item)
+        if new_qty is None:
+            messages.error(request, 'This item can no longer be marked as returned.')
+            return redirect('dashboard')
+        item.qty = new_qty
         item.save(update_fields=['qty'])
         shelf_request.status = 'returned'
         shelf_request.save(update_fields=['status', 'updated_at'])
@@ -465,12 +487,13 @@ def cancel_request_view(request, request_id):
         shelf_request = get_object_or_404(
             ShelfRequest.objects.select_for_update(), pk=request_id, requester=request.user
         )
-        if shelf_request.is_closed or shelf_request.status == 'lent':
+        item = Item.objects.select_for_update().get(pk=shelf_request.item_id) if shelf_request.item_id else None
+        new_qty = logic.allowed_qty(shelf_request, 'seeker', 'cancelled', item)
+        if new_qty is None:
             messages.error(request, 'This request can no longer be cancelled.')
             return redirect('dashboard')
-        if shelf_request.status == 'matched' and shelf_request.item_id:
-            item = Item.objects.select_for_update().get(pk=shelf_request.item_id)
-            item.qty = min(item.qty + 1, 20)
+        if item and new_qty != item.qty:
+            item.qty = new_qty
             item.save(update_fields=['qty'])
         shelf_request.status = 'cancelled'
         shelf_request.save(update_fields=['status', 'updated_at'])
@@ -482,7 +505,11 @@ def cancel_request_view(request, request_id):
 @require_POST
 def confirm_handoff_view(request, request_id):
     shelf_request = get_object_or_404(ShelfRequest, pk=request_id, requester=request.user, status='matched')
-    shelf_request.status = 'lent' if shelf_request.is_lend else 'fulfilled'
+    target = 'lent' if shelf_request.is_lend else 'fulfilled'
+    if logic.allowed_qty(shelf_request, 'seeker', target, shelf_request.item) is None:
+        messages.error(request, 'This handoff can no longer be confirmed.')
+        return redirect('dashboard')
+    shelf_request.status = target
     shelf_request.save(update_fields=['status', 'updated_at'])
     messages.success(request, 'Borrowing started.' if shelf_request.is_lend else 'Handoff confirmed. Thanks!')
     return redirect('dashboard')
@@ -493,11 +520,11 @@ def confirm_handoff_view(request, request_id):
 def ask_for_match_view(request, request_id, item_id):
     shelf_request = get_object_or_404(ShelfRequest, pk=request_id, requester=request.user, status='open')
     item = get_object_or_404(Item, pk=item_id, paused=False, qty__gt=0)
-    if not item_matches_request(item, shelf_request):
+    if not logic.is_match(item, shelf_request):
         messages.error(request, 'That item is not an available match for your request.')
         return redirect('dashboard')
-    if item.is_lend:
-        messages.info(request, 'Borrowing through Browse will be added later.')
+    if logic.allowed_qty(shelf_request, 'seeker', 'requested') is None:
+        messages.error(request, 'This request can no longer be sent.')
         return redirect('dashboard')
     shelf_request.item = item
     shelf_request.is_lend = False
@@ -531,11 +558,31 @@ def _mark_request_viewer(shelf_request, user):
     return shelf_request
 
 
+def _matches_by_request(open_requests, limit=6):
+    """Suggested items for each open request: {request id: [items]}.
+
+    The database only narrows the candidates down to the right categories;
+    Prolog's matches/2 rule decides which items actually match. One Prolog call
+    covers every request on the page.
+    """
+    open_requests = [r for r in open_requests if r.status == 'open']
+    if not open_requests:
+        return {}
+    candidates = {
+        item.pk: item
+        for item in Item.objects.filter(
+            category__in={r.category for r in open_requests}, paused=False, qty__gt=0,
+        ).select_related('owner', 'owner__profile')
+    }
+    found = {r.pk: [] for r in open_requests}
+    for request_id, item_id in logic.find_matches(candidates.values(), open_requests):
+        if len(found[request_id]) < limit:
+            found[request_id].append(candidates[item_id])
+    return found
+
+
 def _matching_items(shelf_request):
-    candidates = Item.objects.filter(
-        category=shelf_request.category, listing='give', paused=False, qty__gt=0,
-    ).exclude(owner_id=shelf_request.requester_id).select_related('owner', 'owner__profile')
-    return [item for item in candidates if item_matches_request(item, shelf_request)]
+    return _matches_by_request([shelf_request]).get(shelf_request.pk, [])
 
 
 def _listing_context():
@@ -564,6 +611,14 @@ def _dashboard_context(user, share_form=None, request_form=None, accept=None,
         status__in=('requested', 'matched', 'lent'),
     ).select_related('requester', 'requester__profile', 'item', 'item__owner', 'item__owner__profile')
 
+    own_requests = list(ShelfRequest.objects.filter(requester=user).select_related(
+        'requester', 'requester__profile', 'item', 'item__owner', 'item__owner__profile'
+    ))
+    incoming_requests = list(incoming_requests)
+    on_loan = [r for r in [*incoming_requests, *own_requests, *([handoff] if handoff else [])] if r.status == 'lent']
+    overdue_ids = logic.find_overdue(on_loan, today)
+    matches = _matches_by_request(own_requests)
+
     incoming = []
     for shelf_request in incoming_requests:
         _mark_request_viewer(shelf_request, user)
@@ -573,7 +628,7 @@ def _dashboard_context(user, share_form=None, request_form=None, accept=None,
             'item': item,
             'can_accept': shelf_request.status == 'requested' and not item.paused and item.qty > 0,
             'posted': _posted_label(shelf_request.created_at),
-            'overdue': bool(shelf_request.status == 'lent' and shelf_request.return_by and shelf_request.return_by < today),
+            'overdue': shelf_request.pk in overdue_ids,
         })
 
     incoming_new = sum(1 for row in incoming if row['request'].status == 'requested')
@@ -595,17 +650,16 @@ def _dashboard_context(user, share_form=None, request_form=None, accept=None,
             'can_decrease': item.qty > 1, 'can_increase': item.qty < 20,
         })
 
-    own_requests = list(ShelfRequest.objects.filter(requester=user).select_related(
-        'requester', 'requester__profile', 'item', 'item__owner', 'item__owner__profile'
-    ))
     request_rows = []
-    for shelf_request in own_requests:
+    # Finished requests (fulfilled, returned, cancelled, declined) drop off the list.
+    # They stay in the database, so the stats and history still count them.
+    for shelf_request in (r for r in own_requests if not r.is_closed):
         _mark_request_viewer(shelf_request, user)
         request_rows.append({
             'request': shelf_request,
             'posted': _posted_label(shelf_request.created_at),
-            'matches': _matching_items(shelf_request)[:6] if shelf_request.status == 'open' else [],
-            'overdue': bool(shelf_request.status == 'lent' and shelf_request.return_by and shelf_request.return_by < today),
+            'matches': matches.get(shelf_request.pk, []),
+            'overdue': shelf_request.pk in overdue_ids,
         })
 
     done_requests = [r for r in ShelfRequest.objects.filter(item__owner=user)
@@ -639,8 +693,8 @@ def _dashboard_context(user, share_form=None, request_form=None, accept=None,
         'accept': accept,
         'accept_form': accept_form or AcceptIncomingForm(),
         'handoff': handoff,
-        'handoff_matches': _matching_items(handoff)[:6] if handoff and handoff.status == 'open' else [],
-        'handoff_overdue': bool(handoff and handoff.return_by and handoff.return_by < today),
+        'handoff_matches': _matching_items(handoff) if handoff and handoff.status == 'open' else [],
+        'handoff_overdue': bool(handoff and handoff.pk in overdue_ids),
         'open_modal': open_modal,
         'dashboard_url': '/dashboard/',
     }

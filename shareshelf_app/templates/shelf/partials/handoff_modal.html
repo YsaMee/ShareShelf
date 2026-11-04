@@ -1,9 +1,4 @@
 {% load shelf_tags %}
-{% comment %}
-  Details for one of your requests. Opens from ?request=<id>.
-  Open: lists the items Prolog matched, with "Ask for this".
-  Matched: who has it, where and when to meet, and "I got it".
-{% endcomment %}
 <div class="modal-backdrop" data-modal="handoff">
   <div class="modal" style="max-width: 560px" role="dialog" aria-modal="true" aria-labelledby="handoff-title">
     {% with subtitle=handoff.category|short_category|add:" · "|add:handoff.condition_label %}
@@ -60,7 +55,6 @@
               {% csrf_token %}
               <button type="submit" class="btn btn-text btn-danger">Cancel request</button>
             </form>
-            <button type="button" class="btn btn-ghost">{% icon "message-circle" 16 %} Message</button>
             <form class="inline-form" method="post" action="{% url 'confirm_handoff' handoff.id %}">
               {% csrf_token %}
               <button type="submit" class="btn btn-primary">{% icon "circle-check" 16 %} I got it</button>

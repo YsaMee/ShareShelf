@@ -1,8 +1,4 @@
 {% load shelf_tags %}
-{% comment %}
-  What the seeker filled in on the request form. The matched view already
-  shows the agreed meetup spot, so it passes show_location=False.
-{% endcomment %}
 {% if handoff.needed_by or handoff.note or show_location and handoff.location %}
   <div class="request-facts">
     {% if handoff.needed_by or show_location and handoff.location %}

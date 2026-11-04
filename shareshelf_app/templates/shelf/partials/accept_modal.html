@@ -1,8 +1,4 @@
 {% load shelf_tags %}
-{% comment %}
-  Sharer accepts an incoming request and sets where and when to meet.
-  Opens from ?accept=<id>; starts from what the requester asked for.
-{% endcomment %}
 <div class="modal-backdrop" data-modal="accept">
   <div class="modal" style="max-width: 560px" role="dialog" aria-modal="true" aria-labelledby="accept-title">
     {% with person=accept.other_party %}{% with name=person.first_name %}

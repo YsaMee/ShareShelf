@@ -169,13 +169,3 @@ class Request(models.Model):
         return SimpleNamespace(location=self.meetup_location, label=label)
 
 
-# Functional style: this pure predicate depends only on its arguments and has no side effects.
-def item_matches_request(item, request_obj):
-    return (
-        item.owner_id != request_obj.requester_id
-        and item.qty > 0
-        and not item.paused
-        and item.category == request_obj.category
-        and (request_obj.preference == 'Flexible' or item.condition == request_obj.preference)
-    )
-

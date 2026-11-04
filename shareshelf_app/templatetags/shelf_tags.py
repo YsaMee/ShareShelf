@@ -6,7 +6,6 @@ from django.utils.html import format_html
 
 register = template.Library()
 
-# Item tiles store a short name; these map them to icons in icons.svg.
 ITEM_ICONS = {
     "pencil": "pencil",
     "calculator": "calculator",
@@ -42,7 +41,6 @@ STATUS_TONES = {
 
 @register.simple_tag
 def icon(name, size=16, stroke=2, css_class=""):
-    """{% icon "plus" 16 %} draws a Lucide icon from icons.svg."""
     return format_html(
         '<svg class="icon {}" width="{}" height="{}" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
         'stroke-width="{}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
@@ -68,7 +66,6 @@ def status_badge(status, pill=False):
 
 @register.inclusion_tag("shelf/partials/avatar.html")
 def avatar(person, size="md"):
-    """{% avatar profile "lg" %}: the student's photo, or their initials if they haven't uploaded one."""
     css = {"sm": "mini-avatar", "md": "avatar", "lg": "avatar avatar-lg", "xl": "avatar avatar-xl"}[size]
     photo = getattr(person, "avatar", None)
     return {"person": person, "css": css, "url": photo.url if photo else ""}
@@ -76,16 +73,15 @@ def avatar(person, size="md"):
 
 @register.filter
 def lookup(mapping, key):
-    """{{ posted|lookup:item.id }} reads mapping[key] in a template."""
     return mapping.get(key, "")
 
 
 @register.filter
 def program_year(person):
-    """"BS Architecture · 3rd Year", or just the program if no year is set."""
     if not person:
         return ""
-    parts = [getattr(person, "program", "") or ""]
+    program_display = getattr(person, "get_program_display", None)
+    parts = [program_display() if callable(program_display) else getattr(person, "program", "") or ""]
     year_display = getattr(person, "get_year_level_display", None)
     if getattr(person, "year_level", None) and callable(year_display):
         parts.append(year_display())
@@ -94,7 +90,6 @@ def program_year(person):
 
 @register.filter
 def short_category(category):
-    """"Drafting & Arts (Architecture, Fine Arts)" -> "Drafting & Arts" """
     return (category or "").split(" (")[0]
 
 
@@ -105,7 +100,6 @@ def first_name(full_name):
 
 @register.filter
 def nice_date(value):
-    """"2026-11-06" -> "Nov 6" """
     if not value:
         return ""
     d = value if isinstance(value, date) else date.fromisoformat(str(value))
