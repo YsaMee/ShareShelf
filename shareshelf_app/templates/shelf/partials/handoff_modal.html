@@ -1,7 +1,7 @@
 {% load shelf_tags %}
 {% comment %}
   Details for one of your requests. Opens from ?request=<id>.
-  Open: lists the items Prolog matched, with "Ask for this".
+  Open: lists suggested items (item_matches_request), with "Ask for this".
   Matched: who has it, where and when to meet, and "I got it".
 {% endcomment %}
 <div class="modal-backdrop" data-modal="handoff">
@@ -60,7 +60,6 @@
               {% csrf_token %}
               <button type="submit" class="btn btn-text btn-danger">Cancel request</button>
             </form>
-            <button type="button" class="btn btn-ghost">{% icon "message-circle" 16 %} Message</button>
             <form class="inline-form" method="post" action="{% url 'confirm_handoff' handoff.id %}">
               {% csrf_token %}
               <button type="submit" class="btn btn-primary">{% icon "circle-check" 16 %} I got it</button>

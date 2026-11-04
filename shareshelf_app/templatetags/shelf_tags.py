@@ -82,10 +82,14 @@ def lookup(mapping, key):
 
 @register.filter
 def program_year(person):
-    """"BS Architecture · 3rd Year", or just the program if no year is set."""
+    """"BS Architecture · 3rd Year", or just the program if no year is set.
+
+    Programs are stored as short codes ("BS Arch"), so show the choice's label.
+    """
     if not person:
         return ""
-    parts = [getattr(person, "program", "") or ""]
+    program_display = getattr(person, "get_program_display", None)
+    parts = [program_display() if callable(program_display) else getattr(person, "program", "") or ""]
     year_display = getattr(person, "get_year_level_display", None)
     if getattr(person, "year_level", None) and callable(year_display):
         parts.append(year_display())
