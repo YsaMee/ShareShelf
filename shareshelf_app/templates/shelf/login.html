@@ -3,24 +3,7 @@
 {% block title %}{% if mode == "signup" %}Create account{% else %}Log in{% endif %} · ShareShelf{% endblock %}
 {% block body %}
   <div class="login">
-    <section class="login-hero">
-      <div class="hero-ring ring-1"></div>
-      <div class="hero-ring ring-2"></div>
-      <div class="hero-copy">
-        <p class="hero-eyebrow">Share more. Waste less.</p>
-        <h1>Every supply deserves a second story.</h1>
-        <p class="hero-lede">Connect with students at your school to share what you have and find what you need.</p>
-      </div>
-      <img class="hero-art" src="{% static 'shelf/shelf.png' %}" alt="" width="407" height="265" />
-      <div class="hero-footer">
-        <div class="hero-stats">
-          <div><strong>1,240+</strong><span>supplies shared</span></div>
-          <div><strong>680</strong><span>students helped</span></div>
-          <div><strong>24</strong><span>school communities</span></div>
-        </div>
-        <p class="hero-note">Built for students, powered by community.</p>
-      </div>
-    </section>
+    {% include "shelf/partials/login_hero.html" %}
 
     <section class="login-panel">
       <form class="login-form{% if mode == 'signup' %} is-signup{% endif %}" method="post" novalidate>
@@ -90,14 +73,10 @@
                 {% include "shelf/partials/field_error.html" with field=form.confirm_password %}
               </label>
             </div>
-            <ul class="password-rules" aria-label="Password requirements" data-password-rules>
-              <li class="rule" data-rule="length">{% icon "circle-check" 12 %} 8+ characters</li>
-              <li class="rule" data-rule="mix">{% icon "circle-check" 12 %} Letters &amp; digits</li>
-              <li class="rule" data-rule="match">{% icon "circle-check" 12 %} Passwords match</li>
-            </ul>
+            {% include "shelf/partials/password_rules.html" %}
             <label class="checkbox-row">
               <input type="checkbox" name="agree"{% if form.agree.value %} checked{% endif %} required />
-              <span>I agree to the <a class="link" href="#">Terms of Service</a> and <a class="link" href="#">Privacy Policy</a>.</span>
+              <span>I agree to the <a class="link" href="{% url 'terms' %}" target="_blank">Terms of Service</a> and <a class="link" href="{% url 'privacy' %}" target="_blank">Privacy Policy</a>.</span>
             </label>
             {% include "shelf/partials/field_error.html" with field=form.agree %}
           </div>
@@ -114,7 +93,7 @@
             <label class="field">
               <span class="field-label-row">
                 <span class="field-label">Password</span>
-                <a class="link" href="#">Forgot password?</a>
+                <a class="link" href="{% url 'password_reset' %}">Forgot password?</a>
               </span>
               {% include "shelf/partials/password_input.html" with name="password" autocomplete="current-password" %}
               {% include "shelf/partials/field_error.html" with field=form.password %}
@@ -123,7 +102,7 @@
 
           <button type="submit" class="btn btn-primary btn-block">Log in to ShareShelf {% icon "arrow-right" 16 %}</button>
           <p class="switch-line">New to ShareShelf? <a class="link" href="{% url 'signup' %}">Create an account</a></p>
-          <p class="legal">By continuing, you agree to our <u>Terms</u> and <u>Privacy Policy</u>.</p>
+          <p class="legal">By continuing, you agree to our <a href="{% url 'terms' %}">Terms</a> and <a href="{% url 'privacy' %}">Privacy Policy</a>.</p>
         {% endif %}
       </form>
     </section>

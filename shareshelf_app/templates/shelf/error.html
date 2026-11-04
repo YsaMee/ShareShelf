@@ -1,0 +1,14 @@
+{% extends "shelf/base.html" %}
+{% load static shelf_tags %}
+{% comment %}Layout for 403, 404 and 500. Django renders 500 without a request, so this page reads nothing from the context.{% endcomment %}
+{% block body %}
+  <main class="error-page">
+    <img class="brand-logo" src="{% static 'shelf/ShareShelf_logo.png' %}" alt="ShareShelf — Share, Seek, Support" width="368" height="101" />
+    <article class="card error-card">
+      <p class="error-code">{% block code %}{% endblock %}</p>
+      <h1>{% block heading %}{% endblock %}</h1>
+      <p class="muted">{% block message %}{% endblock %}</p>
+      <a class="btn btn-primary" href="/">{% icon "house" 16 %} Go to ShareShelf</a>
+    </article>
+  </main>
+{% endblock %}

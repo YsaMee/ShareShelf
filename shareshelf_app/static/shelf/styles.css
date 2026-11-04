@@ -385,6 +385,56 @@ fieldset.field legend { padding: 0; margin-bottom: 6px; width: 100%; }
 .toast.is-error { background: var(--danger); }
 .toast svg { color: #6ee7a8; }
 
+/* Profile menu (opens upward from the bottom of the sidebar) */
+.menu-list.is-up { top: auto; bottom: calc(100% + 4px); }
+.menu-list a, .menu-list button { display: flex; align-items: center; gap: 8px; }
+.menu-list a { padding: 9px 12px; border-radius: var(--radius-sm); font-size: 13px; color: var(--body); text-decoration: none; }
+.menu-list a:hover { background: var(--bg); }
+
+/* Settings */
+.settings { max-width: 760px; }
+.settings-card { gap: 20px; scroll-margin-top: 24px; }
+.settings-head { display: flex; align-items: center; gap: 14px; }
+.settings-head .metric-icon { width: 40px; height: 40px; }
+.settings-head h3 { margin-bottom: 0; }
+.settings-person { padding: 16px; border-radius: var(--radius); background: var(--bg); }
+.avatar-lg { width: 52px; height: 52px; font-size: 16px; }
+.input.is-readonly { background: var(--bg); color: var(--muted); cursor: not-allowed; }
+.input.is-readonly:focus { border-color: var(--input-border); box-shadow: none; }
+.field-note .icon { vertical-align: -1px; }
+.settings .form-actions .btn-primary { background: var(--primary); }
+.settings-links { display: flex; flex-direction: column; }
+.settings-links a { display: flex; align-items: center; gap: 12px; padding: 14px 4px; border-top: 1px solid var(--border-soft); color: var(--body); font-size: 14px; text-decoration: none; }
+.settings-links li:first-child a { border-top: 0; }
+.settings-links a span { flex: 1; }
+.settings-links a:hover { color: var(--primary); }
+.settings-links .icon:last-child { color: var(--faint); }
+
+/* Password reset (reuses the login layout) */
+.login-form > .sent-note { margin-top: -8px; }
+
+/* Terms and Privacy */
+.doc-page { max-width: 760px; margin: 0 auto; padding: 32px 24px 56px; display: flex; flex-direction: column; gap: 24px; }
+.doc-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.doc-top .sidebar-brand { margin-bottom: 0; }
+.doc-switch { width: 340px; max-width: 100%; }
+.doc { padding: 40px 44px; display: flex; flex-direction: column; gap: 6px; }
+.doc h1 { font-size: 30px; line-height: 38px; font-weight: 800; letter-spacing: -0.75px; color: #161a2d; }
+.doc-body { margin-top: 20px; display: flex; flex-direction: column; gap: 12px; font-size: 14px; line-height: 23px; color: var(--body); }
+.doc-body h2 { margin: 14px 0 0; font-size: 17px; font-weight: 700; color: var(--ink); }
+.doc-body ul { list-style: disc; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+.doc-body p, .doc-body ul { margin: 0; }
+.doc-footer { text-align: center; }
+.legal a { color: inherit; }
+
+/* Error pages */
+.error-page { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; padding: 32px 16px; }
+.error-page .brand-logo { margin: 0; width: min(100%, 240px); }
+.error-card { width: 100%; max-width: 460px; padding: 40px 32px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.error-code { font-size: 56px; line-height: 1; font-weight: 800; letter-spacing: -2px; color: var(--primary); }
+.error-card h1 { font-size: 22px; font-weight: 700; color: var(--ink-strong); }
+.error-card .btn { margin-top: 12px; }
+
 /* Responsive: the Figma frames are desktop only, so this is a sensible fallback. */
 @media (max-width: 1100px) {
   .columns, .detail { grid-template-columns: 1fr; }
@@ -408,4 +458,8 @@ fieldset.field legend { padding: 0; margin-bottom: 6px; width: 100%; }
   .header-actions { flex-wrap: wrap; }
   .row .status { margin-left: auto; }
   .modal-header, .modal-body { padding-left: 20px; padding-right: 20px; }
+  .doc-page { padding: 20px 16px 40px; }
+  .doc { padding: 28px 20px; }
+  .doc h1 { font-size: 24px; line-height: 30px; }
+  .settings .form-actions .btn { width: 100%; }
 }
