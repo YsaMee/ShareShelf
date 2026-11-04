@@ -651,7 +651,9 @@ def _dashboard_context(user, share_form=None, request_form=None, accept=None,
         })
 
     request_rows = []
-    for shelf_request in own_requests:
+    # Finished requests (fulfilled, returned, cancelled, declined) drop off the list.
+    # They stay in the database, so the stats and history still count them.
+    for shelf_request in (r for r in own_requests if not r.is_closed):
         _mark_request_viewer(shelf_request, user)
         request_rows.append({
             'request': shelf_request,
