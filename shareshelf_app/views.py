@@ -1,13 +1,14 @@
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, request
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from .forms import (
     AcceptIncomingForm,
@@ -16,6 +17,8 @@ from .forms import (
     RequestPostForm,
     ShareItemForm,
     SignUpForm,
+    ProfileForm,
+    ShelfPasswordChangeForm,
 )
 from .models import Item, Request as ShelfRequest, UserProfile, item_matches_request
 
@@ -24,11 +27,43 @@ def profile_context(request):
     """Add the signed-in student's profile to every rendered template."""
     if request.user.is_authenticated:
         try:
-            return {'profile': request.user.profile}
+            profile = request.user.profile
         except UserProfile.DoesNotExist:
-            pass
-    return {'profile': None}
+            return {'profile': None, 'profile_form': None}
+        return {'profile': profile, 'profile_form': ProfileForm(instance=profile)}
+    return {'profile': None, 'profile_form': None}
 
+@login_required(login_url='login')
+def settings_view(request):
+    password_form = ShelfPasswordChangeForm(request.user)
+    if request.method == 'POST':
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        form = ProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your profile was updated.')
+            next_url = request.POST.get('next')
+            if next_url and url_has_allowed_host_and_scheme(
+                next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+            ):
+                return redirect(next_url)
+            return redirect('settings')
+        return render(request, 'shelf/settings.html', {
+            'profile_form': form, 'open_modal': 'profile', 'password_form': password_form,
+        })
+    return render(request, 'shelf/settings.html', {'password_form': password_form})
+
+
+@login_required(login_url='login')
+@require_POST
+def password_change_view(request):
+    form = ShelfPasswordChangeForm(request.user, request.POST)
+    if form.is_valid():
+        user = form.save()
+        update_session_auth_hash(request, user)
+        messages.success(request, 'Your password was changed.')
+        return redirect('settings')
+    return render(request, 'shelf/settings.html', {'password_form': form})
 
 def login_view(request):
     if request.user.is_authenticated:

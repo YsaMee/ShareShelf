@@ -1,8 +1,9 @@
 import re
 from django import forms
 from django.core.exceptions import ValidationError
+from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
-from .models import Item, PROGRAM_CHOICES, Request
+from .models import Item, PROGRAM_CHOICES, Request, UserProfile, LOCATION_CHOICES, YEAR_LEVEL_CHOICES
 
 class LoginForm(forms.Form):
     email = forms.EmailField(
@@ -11,6 +12,24 @@ class LoginForm(forms.Form):
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={'placeholder': 'Password'})
     )
+
+def min_length(n):
+    return lambda password: len(password) >= n
+
+def contains(pattern):
+    return lambda password: re.search(pattern, password) is not None
+
+def all_of(*checks):
+    return lambda password: all(check(password) for check in checks)
+
+PASSWORD_RULES = (
+    (min_length(8), "Password must be at least 8 characters long."),
+    (all_of(contains(r'[A-Za-z]'), contains(r'\d')), "Password must contain both letters and digits."),
+)
+
+def password_rule_errors(password):
+    broken = filter(lambda rule: not rule[0](password or ''), PASSWORD_RULES)
+    return list(map(lambda rule: rule[1], broken))
 
 class SignUpForm(forms.Form):
     name = forms.CharField(max_length=80, widget=forms.TextInput(attrs={'placeholder': 'Your full name'}))
@@ -148,3 +167,36 @@ class BorrowForm(forms.Form):
                     limit_label = self.item.get_lend_limit_display().lower()
                     self.add_error('return_by', f'Exceeds lending limit of {limit_label} ({self.item.lend_limit} days).')
         return cleaned_data
+
+class ProfileForm(forms.ModelForm):
+    MAX_AVATAR_BYTES = 2 * 1024 * 1024
+    school = forms.ChoiceField(choices=[('Mapúa MCM', 'Mapúa MCM')])
+
+    class Meta:
+        model = UserProfile
+        fields = ('avatar', 'full_name', 'display_name', 'school', 'program', 'year_level', 'bio', 'pickup_spot')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['display_name'].required = True
+        self.fields['pickup_spot'].choices = [('', 'No preference')] + LOCATION_CHOICES
+
+    def clean_avatar(self):
+        avatar = self.cleaned_data.get('avatar')
+        if avatar and hasattr(avatar, 'content_type'):  # only check newly uploaded files
+            if avatar.content_type not in ('image/jpeg', 'image/png'):
+                raise ValidationError("Upload a JPG or PNG image.")
+            if avatar.size > self.MAX_AVATAR_BYTES:
+                raise ValidationError("Image must be 2MB or smaller.")
+        return avatar
+
+
+class ShelfPasswordChangeForm(PasswordChangeForm):
+    def clean_new_password1(self):
+        password = self.cleaned_data.get('new_password1')
+        errors = password_rule_errors(password)
+        if password and self.user.check_password(password):
+            errors.append("Choose a password different from your current one.")
+        if errors:
+            raise ValidationError(errors)
+        return password
