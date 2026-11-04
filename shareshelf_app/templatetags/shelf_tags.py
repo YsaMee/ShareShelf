@@ -66,10 +66,30 @@ def status_badge(status, pill=False):
     return {"status": status, "tone": STATUS_TONES.get(status, "gray"), "pill": pill}
 
 
+@register.inclusion_tag("shelf/partials/avatar.html")
+def avatar(person, size="md"):
+    """{% avatar profile "lg" %}: the student's photo, or their initials if they haven't uploaded one."""
+    css = {"sm": "mini-avatar", "md": "avatar", "lg": "avatar avatar-lg", "xl": "avatar avatar-xl"}[size]
+    photo = getattr(person, "avatar", None)
+    return {"person": person, "css": css, "url": photo.url if photo else ""}
+
+
 @register.filter
 def lookup(mapping, key):
     """{{ posted|lookup:item.id }} reads mapping[key] in a template."""
     return mapping.get(key, "")
+
+
+@register.filter
+def program_year(person):
+    """"BS Architecture · 3rd Year", or just the program if no year is set."""
+    if not person:
+        return ""
+    parts = [getattr(person, "program", "") or ""]
+    year_display = getattr(person, "get_year_level_display", None)
+    if getattr(person, "year_level", None) and callable(year_display):
+        parts.append(year_display())
+    return " · ".join(p for p in parts if p)
 
 
 @register.filter

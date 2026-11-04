@@ -86,7 +86,7 @@
 
         <label class="field">
           <span class="field-label">Campus pickup spot</span>
-          {% include "shelf/partials/select.html" with field=share_form.location icon="map-pin" %}
+          {% include "shelf/partials/select.html" with field=share_form.location icon="map-pin" fallback=profile.pickup_spot %}
         </label>
 
         <label class="field">

@@ -10,12 +10,15 @@ function openModal(name) {
   if (!modal) return false
   modal.hidden = false
   modal._opener = document.activeElement
-  modal.querySelector('.modal-body ' + focusable)?.focus()
+  document.querySelectorAll('details.menu[open]').forEach((menu) => menu.removeAttribute('open'))
+  ;(modal.querySelector('[data-autofocus]') || modal.querySelector('.modal-body ' + focusable))?.focus()
   return true
 }
 
 function closeModal(modal) {
   modal.hidden = true
+  // Cancel means cancel: the profile popup forgets unsaved edits and a picked photo.
+  modal.querySelector('[data-profile-form]')?.reset()
   modal._opener?.focus()
   // Drop ?modal=, ?request= or ?accept= so a refresh doesn't reopen it.
   const url = new URL(window.location)
@@ -74,7 +77,7 @@ document.addEventListener('keydown', (e) => {
 
 // A popup the server opened (form errors, ?accept=...) gets focus on load.
 const serverOpened = document.querySelector('[data-modal]:not([hidden])')
-serverOpened?.querySelector('.modal-body ' + focusable)?.focus()
+;(serverOpened?.querySelector('[data-autofocus]') || serverOpened?.querySelector('.modal-body ' + focusable))?.focus()
 
 // ---------- "..." menus ----------
 // Only one open at a time; clicking anywhere else closes it.
@@ -157,6 +160,76 @@ document.querySelectorAll('[data-password-rules]').forEach((rules) => {
   password.addEventListener('input', update)
   confirm.addEventListener('input', update)
   update()
+})
+
+// ---------- Edit profile: photo preview ----------
+// The server checks type and size too; this just catches mistakes before uploading.
+const MAX_AVATAR_BYTES = 2 * 1024 * 1024
+
+document.querySelectorAll('[data-avatar-picker]').forEach((picker) => {
+  const form = picker.closest('form')
+  const input = picker.querySelector('[data-avatar-input]')
+  const preview = picker.querySelector('[data-avatar-preview]')
+  const removeLabel = picker.querySelector('[data-avatar-remove]')
+  const clear = removeLabel.querySelector('input')
+  const error = picker.querySelector('[data-avatar-error]')
+  const initials = picker.querySelector('[data-avatar-initials]').innerHTML.trim()
+  const saved = { html: preview.innerHTML, canRemove: !removeLabel.hidden }
+  let objectUrl = null
+
+  const showImage = (url) => {
+    preview.replaceChildren()
+    if (url) {
+      const img = document.createElement('img')
+      img.src = url
+      img.alt = ''
+      preview.append(img)
+    } else {
+      preview.textContent = initials
+    }
+  }
+  const forgetUpload = () => {
+    if (objectUrl) URL.revokeObjectURL(objectUrl)
+    objectUrl = null
+  }
+  const fail = (message) => {
+    input.value = ''
+    error.textContent = message
+    error.hidden = false
+  }
+
+  input.addEventListener('change', () => {
+    const file = input.files[0]
+    error.hidden = true
+    if (!file) return
+    if (!['image/jpeg', 'image/png'].includes(file.type)) return fail('Please choose a JPG or PNG image.')
+    if (file.size > MAX_AVATAR_BYTES) return fail('That photo is over 2MB. Please choose a smaller one.')
+    forgetUpload()
+    objectUrl = URL.createObjectURL(file)
+    showImage(objectUrl)
+    clear.checked = false // Django rejects "new photo" and "remove" together
+    removeLabel.hidden = false
+  })
+
+  clear.addEventListener('change', () => {
+    if (!clear.checked) return
+    input.value = ''
+    forgetUpload()
+    showImage(null)
+    error.hidden = true
+    removeLabel.hidden = true
+  })
+
+  // Cancel / X reset the form; put the photo and counters back the way they were.
+  form.addEventListener('reset', () =>
+    setTimeout(() => {
+      forgetUpload()
+      preview.innerHTML = saved.html
+      removeLabel.hidden = !saved.canRemove
+      error.hidden = true
+      form.querySelectorAll('textarea, input').forEach((field) => field.dispatchEvent(new Event('input')))
+    }),
+  )
 })
 
 // ---------- Toasts fade out ----------

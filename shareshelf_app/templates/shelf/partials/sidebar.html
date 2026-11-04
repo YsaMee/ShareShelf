@@ -1,5 +1,5 @@
 {% load static shelf_tags %}
-{% url 'dashboard' as dashboard_url %}{% url 'browse' as browse_url %}
+{% url 'dashboard' as dashboard_url %}{% url 'browse' as browse_url %}{% url 'settings' as settings_url %}
 <aside class="sidebar">
   <a class="sidebar-brand" href="{{ dashboard_url }}">
     <img src="{% static 'shelf/logo-mark.svg' %}" alt="" width="28" height="34" />
@@ -18,18 +18,31 @@
   </nav>
 
   <div class="sidebar-bottom">
-    <button class="nav-item" type="button">{% icon "settings" 18 1.75 %}<span>Settings</span></button>
+    <a class="nav-item {% if request.path == settings_url %}is-active{% endif %}" href="{{ settings_url }}"
+       {% if request.path == settings_url %}aria-current="page"{% endif %}>
+      {% icon "settings" 18 1.75 %}<span>Settings</span>
+    </a>
     <form method="post" action="{% url 'logout' %}">
       {% csrf_token %}
       <button class="nav-item" type="submit">{% icon "log-out" 18 1.75 %}<span>Log out</span></button>
     </form>
     <div class="profile">
-      <div class="avatar">{{ profile.initials }}</div>
+      {% avatar profile %}
       <div class="profile-text">
         <strong>{{ profile.name }}</strong>
         <span>{{ profile.school }}</span>
       </div>
-      <button class="icon-button" type="button" aria-label="Profile menu">{% icon "ellipsis" 18 %}</button>
+      <details class="menu">
+        <summary class="icon-button" aria-label="Profile menu">{% icon "ellipsis" 18 %}</summary>
+        <div class="menu-list is-up" role="menu">
+          <a href="{{ settings_url }}?modal=profile" data-open="profile" role="menuitem">{% icon "user" 14 %} Edit profile</a>
+          <a href="{{ settings_url }}#password" role="menuitem">{% icon "lock" 14 %} Change password</a>
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" role="menuitem" class="is-danger">{% icon "log-out" 14 %} Log out</button>
+          </form>
+        </div>
+      </details>
     </div>
   </div>
 </aside>

@@ -1,0 +1,98 @@
+{% extends "shelf/app.html" %}
+{% load shelf_tags %}
+{% block title %}Settings · ShareShelf{% endblock %}
+
+{% block content %}
+  <div class="page settings">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Your account</p>
+        <h1>Settings</h1>
+        <p class="muted">Update how classmates see you, and keep your account secure.</p>
+      </div>
+    </header>
+
+    <article class="card panel settings-card" id="profile">
+      <div class="settings-head">
+        <div class="metric-icon tone-purple">{% icon "user" 20 %}</div>
+        <div>
+          <h3>Profile</h3>
+          <p class="muted">What classmates see on your shared items and requests.</p>
+        </div>
+        <a class="btn btn-ghost btn-sm settings-edit" href="?modal=profile" data-open="profile">{% icon "pencil" 14 %} Edit profile</a>
+      </div>
+
+      <div class="person settings-person">
+        {% avatar profile "lg" %}
+        <div>
+          <strong>{{ profile.name }}</strong>
+          <span class="muted small">{{ profile.program }}{% if profile.year_level %} · {{ profile.get_year_level_display }}{% endif %} · {{ profile.school }}</span>
+        </div>
+      </div>
+
+      <dl class="profile-facts">
+        <div><dt>Full name</dt><dd>{{ profile.full_name|default:profile.name }}</dd></div>
+        <div><dt>School email</dt><dd>{{ user.email }}</dd></div>
+        <div><dt>Pickup spot</dt><dd>{% if profile.pickup_spot %}{% icon "map-pin" 14 %} {{ profile.pickup_spot }}{% else %}<span class="faint">Not set</span>{% endif %}</dd></div>
+        <div class="is-wide"><dt>About you</dt><dd>{% if profile.bio %}{{ profile.bio }}{% else %}<span class="faint">Add a short note so classmates know who they’re meeting.</span>{% endif %}</dd></div>
+      </dl>
+    </article>
+
+    <article class="card panel settings-card" id="password">
+      <div class="settings-head">
+        <div class="metric-icon tone-orange">{% icon "lock" 20 %}</div>
+        <div>
+          <h3>Password</h3>
+          <p class="muted">You’ll stay logged in on this device after changing it.</p>
+        </div>
+      </div>
+
+      <form class="form" method="post" action="{% url 'password_change' %}" novalidate>
+        {% csrf_token %}
+        {% if password_form.non_field_errors %}<p class="form-error" role="alert">{{ password_form.non_field_errors.0 }}</p>{% endif %}
+        <label class="field">
+          <span class="field-label-row">
+            <span class="field-label">Current password</span>
+            <a class="link small" href="{% url 'password_reset' %}">Forgot it?</a>
+          </span>
+          {% include "shelf/partials/password_input.html" with name="old_password" autocomplete="current-password" %}
+          {% include "shelf/partials/field_error.html" with field=password_form.old_password %}
+        </label>
+        <div class="field-pair">
+          <label class="field">
+            <span class="field-label">New password</span>
+            {% include "shelf/partials/password_input.html" with name="new_password1" role="new" autocomplete="new-password" %}
+            {% include "shelf/partials/field_error.html" with field=password_form.new_password1 %}
+          </label>
+          <label class="field">
+            <span class="field-label">Confirm new password</span>
+            {% include "shelf/partials/password_input.html" with name="new_password2" role="confirm" autocomplete="new-password" %}
+            {% include "shelf/partials/field_error.html" with field=password_form.new_password2 %}
+          </label>
+        </div>
+        {% include "shelf/partials/password_rules.html" %}
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Update password</button>
+        </div>
+      </form>
+    </article>
+
+    <article class="card panel settings-card">
+      <div class="settings-head">
+        <div class="metric-icon tone-green">{% icon "shield-check" 20 %}</div>
+        <div>
+          <h3>Safety &amp; privacy</h3>
+          <p class="muted">How ShareShelf handles your account and handoffs.</p>
+        </div>
+      </div>
+      <ul class="settings-links">
+        <li><a href="{% url 'terms' %}">{% icon "file-text" 16 %}<span>Terms of Service</span>{% icon "arrow-right" 14 %}</a></li>
+        <li><a href="{% url 'privacy' %}">{% icon "shield-check" 16 %}<span>Privacy Policy</span>{% icon "arrow-right" 14 %}</a></li>
+      </ul>
+      <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-ghost">{% icon "log-out" 16 %} Log out</button>
+      </form>
+    </article>
+  </div>
+{% endblock %}

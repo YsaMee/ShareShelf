@@ -70,7 +70,7 @@
           </label>
           <label class="field">
             <span class="field-label">Preferred Pickup Location <em>*</em></span>
-            {% include "shelf/partials/select.html" with field=request_form.location icon="map-pin" %}
+            {% include "shelf/partials/select.html" with field=request_form.location icon="map-pin" fallback=profile.pickup_spot %}
           </label>
         </div>
 

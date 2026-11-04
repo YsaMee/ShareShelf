@@ -1,0 +1,124 @@
+{% load shelf_tags %}
+{% comment %}
+  "Edit profile" popup. It's on every logged-in page (app.html) and opens from the
+  profile menu, the Settings page, or ?modal=profile. Needs profile_form.
+  Cancel and X throw away unsaved changes, including a picked photo.
+{% endcomment %}
+{% with f=profile_form %}
+<div class="modal-backdrop" data-modal="profile" {% if open_modal != "profile" and request.GET.modal != "profile" %}hidden{% endif %}>
+  <div class="modal profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-title">
+    <form class="profile-form" method="post" action="{% url 'settings' %}" enctype="multipart/form-data" novalidate data-profile-form>
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.path }}" />
+
+      <header class="profile-modal-head">
+        <div>
+          <p class="eyebrow">Your account</p>
+          <h2 id="profile-title">Edit profile</h2>
+          <p class="muted">Update your campus display information, academic details, and bio.</p>
+        </div>
+        <a class="round-button" href="{{ request.path }}" data-close aria-label="Close">{% icon "x" 18 %}</a>
+      </header>
+
+      <div class="profile-modal-body">
+        {% if f.non_field_errors %}<p class="form-error" role="alert">{{ f.non_field_errors.0 }}</p>{% endif %}
+
+        {# Photo: preview updates in the browser; the server checks type and size too. #}
+        <div class="avatar-picker" data-avatar-picker>
+          <span class="avatar avatar-xl avatar-camera">
+            <span data-avatar-preview>{% if profile.avatar %}<img src="{{ profile.avatar.url }}" alt="" />{% else %}{{ profile.initials }}{% endif %}</span>
+            <span class="avatar-badge">{% icon "camera" 12 %}</span>
+          </span>
+          <template data-avatar-initials>{{ profile.initials }}</template>
+          <div class="avatar-picker-text">
+            <div class="avatar-actions">
+              <label class="soft-chip">
+                {% icon "upload" 14 %} Change avatar
+                <input class="visually-hidden" type="file" name="{{ f.avatar.html_name }}" accept="image/jpeg,image/png" data-avatar-input />
+              </label>
+              <label class="text-chip"{% if not profile.avatar %} hidden{% endif %} data-avatar-remove>
+                <input class="visually-hidden" type="checkbox" name="{{ f.avatar.html_name }}-clear" />
+                Remove
+              </label>
+            </div>
+            <span class="small muted">Recommended square JPG or PNG, max 2MB.</span>
+            <span class="field-error" data-avatar-error{% if not f.avatar.errors %} hidden{% endif %}>{{ f.avatar.errors.0 }}</span>
+          </div>
+        </div>
+
+        <div class="field-pair">
+          <label class="field">
+            <span class="field-label">Full name <em>*</em></span>
+            <input class="input tinted" name="{{ f.full_name.html_name }}" value="{{ f.full_name.value|default:'' }}" maxlength="80" required autocomplete="name" data-autofocus />
+            {% include "shelf/partials/field_error.html" with field=f.full_name %}
+          </label>
+          <label class="field">
+            <span class="field-label">Display name <em>*</em></span>
+            <input class="input tinted" name="{{ f.display_name.html_name }}" value="{{ f.display_name.value|default:'' }}" maxlength="40" required autocomplete="nickname" />
+            {% include "shelf/partials/field_error.html" with field=f.display_name %}
+          </label>
+        </div>
+
+        <label class="field">
+          <span class="field-label">School email</span>
+          <span class="input-wrap">
+            <input class="input tinted is-readonly" type="email" value="{{ user.email }}" readonly aria-readonly="true" aria-describedby="profile-email-note" />
+            <span class="input-suffix">{% icon "shield-check" 16 %}</span>
+          </span>
+          <span class="field-hint" id="profile-email-note">Your school email is your login, so it can’t be changed here.</span>
+        </label>
+
+        <div class="field-pair">
+          <label class="field">
+            <span class="field-label">School / Campus</span>
+            {% include "shelf/partials/select.html" with field=f.school %}
+            {% include "shelf/partials/field_error.html" with field=f.school %}
+          </label>
+          <label class="field">
+            <span class="field-label">Program</span>
+            {% include "shelf/partials/select.html" with field=f.program %}
+            {% include "shelf/partials/field_error.html" with field=f.program %}
+          </label>
+        </div>
+
+        <fieldset class="field">
+          <legend class="field-label">Year level</legend>
+          <div class="year-choices">
+            {% for value, label in f.year_level.field.choices %}{% if value != "" %}
+              <label class="year-choice">
+                <input type="radio" name="{{ f.year_level.html_name }}" value="{{ value }}"
+                       {% if value|stringformat:"s" == f.year_level.value|stringformat:"s" %}checked{% endif %} />
+                <span>{{ label }}</span>
+              </label>
+            {% endif %}{% endfor %}
+          </div>
+          {% include "shelf/partials/field_error.html" with field=f.year_level %}
+        </fieldset>
+
+        <label class="field">
+          <span class="field-label-row">
+            <span class="field-label">About you</span>
+            <span class="field-count"><span data-count-for="{{ f.bio.auto_id }}">{{ f.bio.value|default:''|length }}</span> / 300</span>
+          </span>
+          <textarea class="input tinted" rows="3" name="{{ f.bio.html_name }}" id="{{ f.bio.auto_id }}" maxlength="300"
+                    placeholder="e.g. Architecture student. Happy to share drafting gear with classmates!">{{ f.bio.value|default:'' }}</textarea>
+          <span class="field-hint">Brief note seen by classmates when requesting or sharing campus items.</span>
+          {% include "shelf/partials/field_error.html" with field=f.bio %}
+        </label>
+
+        <label class="field">
+          <span class="field-label">Campus pickup spot</span>
+          {% include "shelf/partials/select.html" with field=f.pickup_spot icon="map-pin" %}
+          <span class="field-hint">Where you usually meet classmates for handoffs. New posts start with this spot.</span>
+          {% include "shelf/partials/field_error.html" with field=f.pickup_spot %}
+        </label>
+      </div>
+
+      <footer class="profile-modal-foot">
+        <a class="btn btn-text" href="{{ request.path }}" data-close>Cancel</a>
+        <button type="submit" class="btn btn-primary btn-deep">{% icon "check" 16 %} Save changes</button>
+      </footer>
+    </form>
+  </div>
+</div>
+{% endwith %}

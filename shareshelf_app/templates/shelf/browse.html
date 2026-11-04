@@ -54,7 +54,7 @@
             <strong>{{ item.name }}</strong>
             <span class="muted small">{{ item.category|short_category }} · {{ item.condition }}</span>
             <div class="item-card-meta">
-              <span class="mini-avatar">{{ item.owner.profile.initials }}</span>
+              {% avatar item.owner.profile "sm" %}
               <span class="small">{{ item.owner.profile.name }}</span>
               <span class="faint small">· {{ posted|lookup:item.id }}</span>
             </div>
