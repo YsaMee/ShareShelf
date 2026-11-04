@@ -137,9 +137,20 @@ STATICFILES_DIRS = [
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
+import os
 
+# Mailers Configuration (Django 6.1+)
 MAILERS = {
     'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
-    },
+        'BACKEND': 'django.core.mail.backends.smtp.EmailBackend',
+        'OPTIONS': {
+            'host': 'smtp.gmail.com',
+            'port': 587,
+            'use_tls': True,
+            'username': os.getenv('EMAIL_HOST_USER'),
+            'password': os.getenv('EMAIL_HOST_PASSWORD'),
+        },
+    }
 }
+
+DEFAULT_FROM_EMAIL = f"ShareShelf Support <{os.getenv('EMAIL_HOST_USER')}>"
