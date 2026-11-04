@@ -68,10 +68,9 @@ def status_badge(status, pill=False):
 
 @register.inclusion_tag("shelf/partials/avatar.html")
 def avatar(person, size="md"):
-    """{% avatar profile "lg" %}: the student's photo, or their initials if they haven't uploaded one."""
+    """{% avatar profile "lg" %}: show the student's initials."""
     css = {"sm": "mini-avatar", "md": "avatar", "lg": "avatar avatar-lg", "xl": "avatar avatar-xl"}[size]
-    photo = getattr(person, "avatar", None)
-    return {"person": person, "css": css, "url": photo.url if photo else ""}
+    return {"person": person, "css": css}
 
 
 @register.filter

@@ -169,27 +169,16 @@ class BorrowForm(forms.Form):
         return cleaned_data
 
 class ProfileForm(forms.ModelForm):
-    MAX_AVATAR_BYTES = 2 * 1024 * 1024
     school = forms.ChoiceField(choices=[('Mapúa MCM', 'Mapúa MCM')])
 
     class Meta:
         model = UserProfile
-        fields = ('avatar', 'full_name', 'display_name', 'school', 'program', 'year_level', 'bio', 'pickup_spot')
+        fields = ('full_name', 'display_name', 'school', 'program', 'year_level', 'bio', 'pickup_spot')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['display_name'].required = True
         self.fields['pickup_spot'].choices = [('', 'No preference')] + LOCATION_CHOICES
-
-    def clean_avatar(self):
-        avatar = self.cleaned_data.get('avatar')
-        if avatar and hasattr(avatar, 'content_type'):  # only check newly uploaded files
-            if avatar.content_type not in ('image/jpeg', 'image/png'):
-                raise ValidationError("Upload a JPG or PNG image.")
-            if avatar.size > self.MAX_AVATAR_BYTES:
-                raise ValidationError("Image must be 2MB or smaller.")
-        return avatar
-
 
 class ShelfPasswordChangeForm(PasswordChangeForm):
     def clean_new_password1(self):

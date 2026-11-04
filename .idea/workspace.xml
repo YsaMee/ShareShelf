@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="c4cfd7e5-6b47-42ab-b5bb-e1f85e782cc8" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/docs/backend.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/shareshelf_app/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/shareshelf_app/forms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/shareshelf_app/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/shareshelf_app/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/shareshelf_app/static/shelf/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/shareshelf_app/static/shelf/app.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/shareshelf_app/templates/shelf/partials/avatar.html" beforeDir="false" afterPath="$PROJECT_DIR$/shareshelf_app/templates/shelf/partials/avatar.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/shareshelf_app/templates/shelf/partials/profile_modal.html" beforeDir="false" afterPath="$PROJECT_DIR$/shareshelf_app/templates/shelf/partials/profile_modal.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/shareshelf_app/templatetags/shelf_tags.py" beforeDir="false" afterPath="$PROJECT_DIR$/shareshelf_app/templatetags/shelf_tags.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="1.8917391626661195" />
+      <entry key="MS500" value="5.864945491649635" />
+      <entry key="S2" value="13.868635087457909" />
+      <entry key="S5" value="20.980477419738477" />
+      <entry key="S10" value="26.132826369125056" />
+      <entry key="S30" value="32.544532442874626" />
+      <entry key="S60" value="38.358763705177175" />
+      <entry key="M2" value="45.46955424007775" />
+      <entry key="M5" value="52.904441174908065" />
+      <entry key="M10" value="57.47479636568515" />
+      <entry key="M15" value="63.061042475098816" />
+      <entry key="M30" value="83.59456790132818" />
+      <entry key="H1" value="112.13870641252409" />
+      <entry key="H2" value="143.98454770938343" />
+      <entry key="H4" value="199.2581669350272" />
+      <entry key="D1" value="487.2622975017355" />
+      <entry key="W1" value="635.0626241027865" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="0.0" />
+      <entry key="S5" value="0.0" />
+      <entry key="S10" value="0.0" />
+      <entry key="S30" value="1.139834733540604E-288" />
+      <entry key="S60" value="1.0676304292874963E-144" />
+      <entry key="M2" value="1.0332620332168857E-72" />
+      <entry key="M5" value="1.605773138341619E-29" />
+      <entry key="M10" value="4.00720992504963E-15" />
+      <entry key="M15" value="2.522869169659419E-10" />
+      <entry key="M30" value="1.5883573413277913E-5" />
+      <entry key="H1" value="0.003992371752167759" />
+      <entry key="H2" value="0.06671305534539282" />
+      <entry key="H4" value="0.33499881448141333" />
+      <entry key="D1" value="1.9711115520591749" />
+      <entry key="W1" value="2.8216354345199233" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="1.7850347676051883" />
+      <entry key="MS500" value="5.798559910183615" />
+      <entry key="S2" value="13.826825350835279" />
+      <entry key="S5" value="20.952151173800313" />
+      <entry key="S10" value="26.11365116985189" />
+      <entry key="S30" value="32.53574080019117" />
+      <entry key="S60" value="38.35304954901631" />
+      <entry key="M2" value="45.465855825037025" />
+      <entry key="M5" value="52.902606088825074" />
+      <entry key="M10" value="57.47377542984104" />
+      <entry key="M15" value="63.06028373421628" />
+      <entry key="M30" value="83.59405906529848" />
+      <entry key="H1" value="112.14233088441031" />
+      <entry key="H2" value="144.05100226166067" />
+      <entry key="H4" value="199.59295869304094" />
+      <entry key="D1" value="489.2333142749523" />
+      <entry key="W1" value="637.8842418594909" />
+    </decayedShown>
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 1,
+  &quot;fromUser&quot;: false
+}</component>
+  <component name="ProjectId" id="3LZyYwIYhPOXlEAvO4UOQ14cj1W" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Python.main.executor": "Debug",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "backend",
+    "ignore.virus.scanning.warn.message": "true",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "C:/Users/Joseth Ang-ug/Documents/PL",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "to.speed.mode.migration.done": "true"
+  },
+  "keyToStringList": {
+    "com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File": [
+      "TEXT"
+    ]
+  }
+}]]></component>
+  <component name="RunManager">
+    <configuration name="main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="PL" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="false" />
+      <option name="RUN_TOOL" value="" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-821f704e66d9-5bd6d13a2a75-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-262.9437.214" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="c4cfd7e5-6b47-42ab-b5bb-e1f85e782cc8" name="Changes" comment="" />
+      <created>1793675935582</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1793675935582</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

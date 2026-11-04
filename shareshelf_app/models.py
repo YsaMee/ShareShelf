@@ -30,8 +30,6 @@ class UserProfile(models.Model):
     year_level = models.PositiveSmallIntegerField(choices=YEAR_LEVEL_CHOICES, null=True, blank=True)
     bio = models.CharField(max_length=300, blank=True)
     pickup_spot = models.CharField(max_length=100, choices=LOCATION_CHOICES, blank=True)
-    avatar = models.ImageField(upload_to='avatars/', blank=True)
-
     def __str__(self):
         return self.full_name
 
