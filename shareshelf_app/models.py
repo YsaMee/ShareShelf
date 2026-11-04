@@ -5,6 +5,11 @@ from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils import timezone
 
+LOCATION_CHOICES = [
+    ('Library', 'Library'), ('Student Lounge', 'Student Lounge'),
+    ('Main Lobby', 'Main Lobby'), ('Other campus spot', 'Other campus spot'),
+]
+
 PROGRAM_CHOICES = [
     ('BSCS', 'BS Computer Science'),
     ('BSIT', 'BS Information Technology'),
@@ -14,22 +19,30 @@ PROGRAM_CHOICES = [
     ('BS Arch', 'BS Architecture')
 ]
 
+YEAR_LEVEL_CHOICES = [(1, '1st Year'), (2, '2nd Year'), (3, '3rd Year'), (4, '4th Year'), (5, '5th Year')]
+
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     full_name = models.CharField(max_length=150)
     program = models.CharField(max_length=50, choices=PROGRAM_CHOICES)
     school = models.CharField(max_length=150, default="Mapúa MCM")
+    display_name = models.CharField(max_length=60, blank=True)
+    year_level = models.PositiveSmallIntegerField(choices=YEAR_LEVEL_CHOICES, null=True, blank=True)
+    bio = models.CharField(max_length=300, blank=True)
+    pickup_spot = models.CharField(max_length=100, choices=LOCATION_CHOICES, blank=True)
+    avatar = models.ImageField(upload_to='avatars/', blank=True)
 
     def __str__(self):
         return self.full_name
 
     @property
     def name(self):
-        return self.full_name or self.user.get_full_name() or self.user.username
+        return self.display_name or self.full_name or self.user.get_full_name() or self.user.username
 
     @property
     def first_name(self):
-        return self.full_name.split()[0] if self.full_name else self.user.username
+        name = self.display_name or self.full_name
+        return name.split()[0] if name else self.user.username
 
     @property
     def initials(self):
@@ -56,10 +69,7 @@ class Item(models.Model):
     LEND_LIMIT_CHOICES = [
         (7, 'Up to 1 week'), (14, 'Up to 2 weeks'), (30, 'Up to 1 month'),
     ]
-    LOCATION_CHOICES = [
-        ('Library', 'Library'), ('Student Lounge', 'Student Lounge'),
-        ('Main Lobby', 'Main Lobby'), ('Other campus spot', 'Other campus spot'),
-    ]
+    LOCATION_CHOICES = LOCATION_CHOICES
 
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='shared_items')
     name = models.CharField(max_length=80)
@@ -168,3 +178,4 @@ def item_matches_request(item, request_obj):
         and item.category == request_obj.category
         and (request_obj.preference == 'Flexible' or item.condition == request_obj.preference)
     )
+
