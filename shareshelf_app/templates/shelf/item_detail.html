@@ -33,7 +33,7 @@
         <article class="card panel">
           <h3>Shared by</h3>
           <div class="person">
-            <div class="avatar">{{ item.owner.profile.initials }}</div>
+            {% avatar item.owner.profile %}
             <div>
               <strong>{{ item.owner.profile.name }}</strong>
               <span class="muted small">{{ item.owner.profile.program }}</span>

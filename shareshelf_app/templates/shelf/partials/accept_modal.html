@@ -11,7 +11,7 @@
         <form class="form" method="post" action="{% url 'accept_incoming' accept.id %}">
           {% csrf_token %}
           <div class="person">
-            <div class="avatar">{{ person.initials }}</div>
+            {% avatar person %}
             <div>
               <strong>{{ person.name }}</strong>
               <span class="muted small">{{ person.program }}{% if accept.needed_by %} · needs it by {{ accept.needed_by|nice_date }}{% endif %}</span>

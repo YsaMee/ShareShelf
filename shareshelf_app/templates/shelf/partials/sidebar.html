@@ -27,7 +27,7 @@
       <button class="nav-item" type="submit">{% icon "log-out" 18 1.75 %}<span>Log out</span></button>
     </form>
     <div class="profile">
-      <div class="avatar">{{ profile.initials }}</div>
+      {% avatar profile %}
       <div class="profile-text">
         <strong>{{ profile.name }}</strong>
         <span>{{ profile.school }}</span>
@@ -35,7 +35,7 @@
       <details class="menu">
         <summary class="icon-button" aria-label="Profile menu">{% icon "ellipsis" 18 %}</summary>
         <div class="menu-list is-up" role="menu">
-          <a href="{{ settings_url }}#profile" role="menuitem">{% icon "user" 14 %} Edit profile</a>
+          <a href="{{ settings_url }}?modal=profile" data-open="profile" role="menuitem">{% icon "user" 14 %} Edit profile</a>
           <a href="{{ settings_url }}#password" role="menuitem">{% icon "lock" 14 %} Change password</a>
           <form method="post" action="{% url 'logout' %}">
             {% csrf_token %}

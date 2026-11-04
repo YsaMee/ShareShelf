@@ -3,7 +3,7 @@
 {% with person=r.other_party %}
   <li class="incoming">
     <div class="incoming-head">
-      <div class="mini-avatar">{{ person.initials }}</div>
+      {% avatar person "sm" %}
       <div class="incoming-text">
         <span><strong>{{ person.name }}</strong> {% if r.status == "lent" %}has{% elif r.is_lend %}wants to borrow{% else %}wants{% endif %} <strong>{{ item.name|default:r.name }}</strong></span>
         <span class="faint small">{{ person.program }}{% if person.program %} · {% endif %}{{ row.posted }}</span>

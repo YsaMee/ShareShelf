@@ -4,7 +4,7 @@
 | --- | --- |
 | `shareshelf_app/templates/shelf/` | Pages: `login`, `dashboard`, `browse`, `item_detail`, `settings`, `terms`, `privacy`, the four `password_reset_*` steps, plus the `base`, `app`, `auth`, `legal` and `error` layouts |
 | `shareshelf_app/templates/` | `403.html`, `404.html`, `500.html` (Django looks for these at the top level) |
-| `shareshelf_app/templates/shelf/partials/` | Sidebar (with the profile menu), the four popups, list rows, badges, toasts, the login hero and password rule chips |
+| `shareshelf_app/templates/shelf/partials/` | Sidebar (with the profile menu), the five popups (including Edit profile), list rows, badges, toasts, the login hero and password rule chips |
 | `shareshelf_app/templatetags/shelf_tags.py` | `{% icon %}`, `{% item_icon %}`, `{% status_badge %}` and small filters |
 | `shareshelf_app/static/shelf/styles.css` | All styles. Colors and radii are CSS variables at the top |
 | `shareshelf_app/static/shelf/app.js` | Opens popups without reloading, "⋯" menus, "Show more", password toggle, toasts |
@@ -50,7 +50,7 @@ The back end has to supply the pieces below with these exact names.
 | `cancel_request` | POST | request id | "Cancel request" |
 | `confirm_handoff` | POST | request id | "I got it" |
 | `ask_for_match` | POST | request id, item id | "Ask for this" on a suggested match |
-| `settings` | GET/POST | | Settings page; POST saves the profile form |
+| `settings` | GET/POST | | Settings page; POST saves the Edit profile popup (`multipart/form-data`, with `next` = the page it was opened from) |
 | `password_change` | POST | | Password form on the Settings page |
 | `password_reset` | GET/POST | | "Forgot password?": asks for the email |
 | `password_reset_done` | GET | | "Check your email" |
@@ -60,7 +60,10 @@ The back end has to supply the pieces below with these exact names.
 
 ### Objects the templates read
 
-**`profile`**: `name`, `first_name`, `initials`, `program`, `school`.
+**`profile`**: `name`, `first_name`, `initials`, `program`, `school`, plus for Edit profile:
+`full_name`, `display_name`, `avatar` (an `ImageField`; empty means initials are shown),
+`year_level` and `get_year_level_display`, `bio`, `pickup_spot`. Templates show `name`
+everywhere, so make `name` return the display name when it's set and the full name otherwise.
 
 **Item**: `id`, `name`, `category`, `condition` (New / Gently Used /
 Functional), `qty`, `paused`, `description`, `location`, `icon`, `tone`,
@@ -123,12 +126,27 @@ it), `posted`, `today`, `borrow_form` (for lent items), and `open_request`
 The back end must check borrow dates: not in the past, return after borrow,
 within the lending limit, and not past the end of term.
 
-**`settings.html`**: `profile_form` (fields `name` and `program`, same choices as
-sign up) and `password_form` (Django's `PasswordChangeForm`: `old_password`,
-`new_password1`, `new_password2`). Both forms post from the same page, so when one has
-errors, render `settings.html` again with that form and a fresh copy of the other.
-The read-only email comes from `user.email`. After a password change, call
-`update_session_auth_hash` so the student stays logged in (the page says so).
+**`settings.html`**: `password_form` (Django's `PasswordChangeForm`: `old_password`,
+`new_password1`, `new_password2`). The read-only email comes from `user.email`. After a
+password change, call `update_session_auth_hash` so the student stays logged in (the page
+says so). When the password form has errors, render `settings.html` again with it.
+
+**Edit profile popup**: it's in `app.html`, so every logged-in page has it, and it opens
+from the profile menu, the Settings page, or `?modal=profile`. It needs **`profile_form`** on
+every logged-in page, so supply it from a context processor (an unbound form built from the
+student's profile). Fields:
+
+| Field | Notes |
+| --- | --- |
+| `avatar` | `ImageField`. JPG or PNG, 2MB max: the browser checks, but the server must check again. The Remove link sends `avatar-clear`, which a `ModelForm` handles for you. Needs `MEDIA_URL` / `MEDIA_ROOT` and Pillow |
+| `full_name`, `display_name` | both required |
+| `school`, `program`, `pickup_spot` | choice fields; the dropdowns list their choices. Add a blank choice to `pickup_spot` if it's optional |
+| `year_level` | choice field, one button per choice (BS Architecture runs five years, so include a 5th Year) |
+| `bio` | 300 characters max |
+
+On success, redirect to the posted `next` (check it with `url_has_allowed_host_and_scheme`).
+On errors, render `settings.html` with the bound form as `profile_form` and
+`open_modal = "profile"` so the popup reopens showing the errors.
 
 **Password reset**: use Django's built-in views from `django.contrib.auth.views`
 and point them at these templates:

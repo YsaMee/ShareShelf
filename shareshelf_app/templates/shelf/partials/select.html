@@ -4,7 +4,7 @@
   {% if icon %}{% icon icon 16 2 "input-icon" %}{% endif %}
   <select class="input tinted" name="{{ field.html_name }}" id="{{ field.auto_id }}">
     {% for value, label in field.field.choices %}
-      <option value="{{ value }}"{% if value == field.value %} selected{% endif %}>{{ label }}</option>
+      <option value="{{ value }}"{% if value|stringformat:"s" == field.value|stringformat:"s" %} selected{% endif %}>{{ label }}</option>
     {% endfor %}
   </select>
   {% icon "chevron-down" 16 2 "input-chevron" %}
