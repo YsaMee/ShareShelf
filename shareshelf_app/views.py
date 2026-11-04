@@ -405,18 +405,26 @@ def remove_item_view(request, item_id):
 @require_POST
 def accept_incoming_view(request, request_id):
     form = AcceptIncomingForm(request.POST)
+    # Confirm ownership first, then handle a stale or repeated form submit
+    # without exposing Django's debug 404 page to the user.
+    shelf_request = get_object_or_404(
+        ShelfRequest.objects.select_related('item'), pk=request_id, item__owner=request.user
+    )
+    if shelf_request.status != 'requested':
+        messages.error(request, 'This request is no longer pending. Refresh the dashboard and try again.')
+        return redirect('dashboard')
     if not form.is_valid():
-        shelf_request = get_object_or_404(
-            ShelfRequest.objects.select_related('item'), pk=request_id, item__owner=request.user, status='requested'
-        )
         _mark_request_viewer(shelf_request, request.user)
         context = _dashboard_context(request.user, accept=shelf_request, accept_form=form)
         return render(request, 'shelf/dashboard.html', context)
     with transaction.atomic():
-        shelf_request = get_object_or_404(
-            ShelfRequest.objects.select_for_update(), pk=request_id,
-            item__owner=request.user, status='requested',
-        )
+        try:
+            shelf_request = ShelfRequest.objects.select_for_update().get(
+                pk=request_id, item__owner=request.user, status='requested',
+            )
+        except ShelfRequest.DoesNotExist:
+            messages.error(request, 'This request is no longer pending. Refresh the dashboard and try again.')
+            return redirect('dashboard')
         item = Item.objects.select_for_update().get(pk=shelf_request.item_id)
         new_qty = logic.allowed_qty(shelf_request, 'sharer', 'matched', item)
         if new_qty is None:
@@ -697,6 +705,8 @@ def _dashboard_context(user, share_form=None, request_form=None, accept=None,
         'handoff_overdue': bool(handoff and handoff.pk in overdue_ids),
         'open_modal': open_modal,
         'dashboard_url': '/dashboard/',
+        'today': today,
+        'current_time': timezone.localtime().strftime('%H:%M'),
     }
     if handoff:
         _mark_request_viewer(handoff, user)

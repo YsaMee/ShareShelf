@@ -127,6 +127,19 @@ class AcceptIncomingForm(forms.Form):
             raise ValidationError('Meetup date cannot be in the past.')
         return meetup_date
 
+    def clean(self):
+        cleaned_data = super().clean()
+        meetup_date = cleaned_data.get('date')
+        meetup_time = cleaned_data.get('time')
+        if meetup_date and meetup_time:
+            from datetime import datetime
+            from django.utils import timezone
+            meetup = datetime.combine(meetup_date, meetup_time)
+            current_minute = timezone.localtime().replace(second=0, microsecond=0, tzinfo=None)
+            if meetup < current_minute:
+                self.add_error('time', 'Meetup time cannot be in the past.')
+        return cleaned_data
+
 
 class BorrowForm(forms.Form):
     prefix = 'borrow'

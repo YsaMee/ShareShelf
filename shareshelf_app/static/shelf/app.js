@@ -68,6 +68,19 @@ document.addEventListener('keydown', (e) => {
 const serverOpened = document.querySelector('[data-modal]:not([hidden])')
 ;(serverOpened?.querySelector('[data-autofocus]') || serverOpened?.querySelector('.modal-body ' + focusable))?.focus()
 
+document.querySelectorAll('[data-meetup-date][data-meetup-time]').forEach((modal) => {
+  const date = modal.querySelector('input[type="date"]')
+  const time = modal.querySelector('input[type="time"]')
+  if (!date || !time) return
+  const updateTimeLimit = () => {
+    time.min = date.value === modal.dataset.meetupDate ? modal.dataset.meetupTime : ''
+    if (time.min && time.value && time.value < time.min) time.value = time.min
+  }
+  date.addEventListener('input', updateTimeLimit)
+  date.addEventListener('change', updateTimeLimit)
+  updateTimeLimit()
+})
+
 document.addEventListener('click', (e) => {
   document.querySelectorAll('details.menu[open]').forEach((menu) => {
     if (!menu.contains(e.target)) menu.removeAttribute('open')

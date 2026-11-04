@@ -63,7 +63,7 @@
             <span class="input-wrap has-icon">
               {% icon "calendar" 16 2 "input-icon" %}
               <input class="input tinted" type="date" name="{{ request_form.needed_by.html_name }}"
-                     value="{{ request_form.needed_by.value|default:''|stringformat:'s' }}" required />
+                     value="{{ request_form.needed_by.value|default:''|stringformat:'s' }}" min="{{ today|date:'Y-m-d' }}" required />
             </span>
             {% include "shelf/partials/field_error.html" with field=request_form.needed_by %}
           </label>

@@ -1,5 +1,5 @@
 {% load shelf_tags %}
-<div class="modal-backdrop" data-modal="accept">
+<div class="modal-backdrop" data-modal="accept" data-meetup-date="{{ today|date:'Y-m-d' }}" data-meetup-time="{{ current_time }}">
   <div class="modal" style="max-width: 560px" role="dialog" aria-modal="true" aria-labelledby="accept-title">
     {% with person=accept.other_party %}{% with name=person.first_name %}
       {% include "shelf/partials/modal_header.html" with title_id="accept-title" eyebrow="Sharer" title="Accept "|add:name|add:"’s request" subtitle=accept.item.name close_href=dashboard_url %}
@@ -27,7 +27,7 @@
               <span class="input-wrap has-icon">
                 {% icon "calendar" 16 2 "input-icon" %}
                 <input class="input tinted" type="date" name="{{ accept_form.date.html_name }}"
-                       value="{{ accept_form.date.value|default:''|stringformat:'s' }}" required />
+                       value="{{ accept_form.date.value|default:''|stringformat:'s' }}" min="{{ today|date:'Y-m-d' }}" required />
               </span>
               {% include "shelf/partials/field_error.html" with field=accept_form.date %}
             </label>
