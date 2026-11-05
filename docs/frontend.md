@@ -50,7 +50,7 @@ The back end has to supply the pieces below with these exact names.
 | `cancel_request` | POST | request id | "Cancel request" |
 | `confirm_handoff` | POST | request id | "I got it" |
 | `ask_for_match` | POST | request id, item id | "Ask for this" on a suggested match |
-| `settings` | GET/POST | | Settings page; POST saves the Edit profile popup (`multipart/form-data`, with `next` = the page it was opened from) |
+| `settings` | GET/POST | | Settings page; POST saves the Edit profile popup (with `next` = the page it was opened from) |
 | `password_change` | POST | | Password form on the Settings page |
 | `password_reset` | GET/POST | | "Forgot password?": asks for the email |
 | `password_reset_done` | GET | | "Check your email" |
@@ -62,7 +62,7 @@ The back end has to supply the pieces below with these exact names.
 
 **`profile`**: `name`, `first_name`, `initials`, `program` (with choices, so
 `get_program_display` gives the full name shown to classmates), `school`, plus for Edit profile:
-`full_name`, `display_name`, `avatar` (an `ImageField`; empty means initials are shown),
+`full_name`, `display_name`,
 `year_level` and `get_year_level_display`, `bio`, `pickup_spot`. Templates show `name`
 everywhere, so make `name` return the display name when it's set and the full name otherwise.
 
@@ -139,7 +139,6 @@ student's profile). Fields:
 
 | Field | Notes |
 | --- | --- |
-| `avatar` | `ImageField`. JPG or PNG, 2MB max: the browser checks, but the server must check again. The Remove link sends `avatar-clear`, which a `ModelForm` handles for you. Needs `MEDIA_URL` / `MEDIA_ROOT` and Pillow |
 | `full_name`, `display_name` | both required |
 | `school`, `program`, `pickup_spot` | choice fields; the dropdowns list their choices. Add a blank choice to `pickup_spot` if it's optional. Give `pickup_spot` the same choices as `Item.location`: the "New post" forms start on the student's saved spot, which only works if it's one of their options |
 | `year_level` | choice field, one button per choice (BS Architecture runs five years, so include a 5th Year). Put the choices on the model field so `get_year_level_display` exists: classmates see "BS Architecture · 3rd Year" |
