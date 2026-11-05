@@ -1,19 +1,3 @@
-% ShareShelf rules (logic programming).
-%
-% Django sends the facts it needs on standard input, then asks one of the
-% queries at the bottom of this file. Nothing here touches the database:
-% Prolog only reasons over the facts it is given.
-%
-% Facts Django provides:
-%   item(ItemId, OwnerId, Listing, Category, Condition, Qty, Paused).
-%       Listing is give or lend. Paused is true or false.
-%   wanted(RequestId, SeekerId, Category, Preference).
-%       An open request. Preference is 'Flexible' or a condition.
-%   lent(RequestId, ReturnByDay).
-%       A request whose item is out on loan.
-%
-% Dates are day numbers (Python's date.toordinal()), so they compare as integers.
-
 :- dynamic item/7, wanted/4, lent/2.
 
 % ---------- Conditions ----------
