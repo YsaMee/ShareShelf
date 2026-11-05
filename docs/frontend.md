@@ -2,14 +2,15 @@
 
 | Path | Function |
 | --- | --- |
-| `shelf/templates/shelf/` | Pages: `login`, `dashboard`, `browse`, `item_detail`, plus `base` and `app` layouts |
-| `shelf/templates/shelf/partials/` | Sidebar, the four popups, list rows, badges, toasts |
-| `shelf/templatetags/shelf_tags.py` | `{% icon %}`, `{% item_icon %}`, `{% status_badge %}` and small filters |
-| `shelf/static/shelf/styles.css` | All styles. Colors and radii are CSS variables at the top |
-| `shelf/static/shelf/app.js` | Opens popups without reloading, "⋯" menus, "Show more", password toggle, toasts |
-| `shelf/static/shelf/icons.svg` | Lucide icons (lucide.dev, ISC license) |
-| `shelf/static/shelf/logo-mark.svg`, `shelf.png` | Logo and login illustration from Figma |
-| `shelf/static/shelf/ShareShelf_logo.png` | Full logo shown above the log in / sign up tabs |
+| `shareshelf_app/templates/shelf/` | Pages: `login`, `dashboard`, `browse`, `item_detail`, `settings`, `terms`, `privacy`, the four `password_reset_*` steps, plus the `base`, `app`, `auth`, `legal` and `error` layouts |
+| `shareshelf_app/templates/` | `403.html`, `404.html`, `500.html` (Django looks for these at the top level) |
+| `shareshelf_app/templates/shelf/partials/` | Sidebar (with the profile menu), the five popups (including Edit profile), list rows, badges, toasts, the login hero and password rule chips |
+| `shareshelf_app/templatetags/shelf_tags.py` | `{% icon %}`, `{% item_icon %}`, `{% status_badge %}` and small filters |
+| `shareshelf_app/static/shelf/styles.css` | All styles. Colors and radii are CSS variables at the top |
+| `shareshelf_app/static/shelf/app.js` | Opens popups without reloading, "⋯" menus, "Show more", password toggle, toasts |
+| `shareshelf_app/static/shelf/icons.svg` | Lucide icons (lucide.dev, ISC license) |
+| `shareshelf_app/static/shelf/logo-mark.svg`, `shelf.png` | Logo and login illustration from Figma |
+| `shareshelf_app/static/shelf/ShareShelf_logo.png` | Full logo shown above the log in / sign up tabs |
 
 Every page works without JavaScript: popups also open from their URL
 (`?modal=share`, `?modal=request`, `?request=<id>`, `?accept=<id>`), and every
@@ -21,7 +22,7 @@ The back end has to supply the pieces below with these exact names.
 
 ### Settings
 
-- `shelf` in `INSTALLED_APPS`, `APP_DIRS = True`, and `django.contrib.staticfiles`.
+- `shareshelf_app` in `INSTALLED_APPS`, `APP_DIRS = True`, and `django.contrib.staticfiles`.
 - Context processors: `request`, `auth`, `messages`, plus one that puts the
   logged-in student's profile in every template as **`profile`**.
 - Success and error messages go through `django.contrib.messages`
@@ -49,10 +50,21 @@ The back end has to supply the pieces below with these exact names.
 | `cancel_request` | POST | request id | "Cancel request" |
 | `confirm_handoff` | POST | request id | "I got it" |
 | `ask_for_match` | POST | request id, item id | "Ask for this" on a suggested match |
+| `settings` | GET/POST | | Settings page; POST saves the Edit profile popup (with `next` = the page it was opened from) |
+| `password_change` | POST | | Password form on the Settings page |
+| `password_reset` | GET/POST | | "Forgot password?": asks for the email |
+| `password_reset_done` | GET | | "Check your email" |
+| `password_reset_confirm` | GET/POST | `uidb64`, `token` | Link from the email: set a new password |
+| `password_reset_complete` | GET | | "Your password is updated" |
+| `terms`, `privacy` | GET | | Terms of Service and Privacy Policy (open without logging in) |
 
 ### Objects the templates read
 
-**`profile`**: `name`, `first_name`, `initials`, `program`, `school`.
+**`profile`**: `name`, `first_name`, `initials`, `program` (with choices, so
+`get_program_display` gives the full name shown to classmates), `school`, plus for Edit profile:
+`full_name`, `display_name`,
+`year_level` and `get_year_level_display`, `bio`, `pickup_spot`. Templates show `name`
+everywhere, so make `name` return the display name when it's set and the full name otherwise.
 
 **Item**: `id`, `name`, `category`, `condition` (New / Gently Used /
 Functional), `qty`, `paused`, `description`, `location`, `icon`, `tone`,
@@ -115,9 +127,51 @@ it), `posted`, `today`, `borrow_form` (for lent items), and `open_request`
 The back end must check borrow dates: not in the past, return after borrow,
 within the lending limit, and not past the end of term.
 
+**`settings.html`**: `password_form` (Django's `PasswordChangeForm`: `old_password`,
+`new_password1`, `new_password2`). The read-only email comes from `user.email`. After a
+password change, call `update_session_auth_hash` so the student stays logged in (the page
+says so). When the password form has errors, render `settings.html` again with it.
+
+**Edit profile popup**: it's in `app.html`, so every logged-in page has it, and it opens
+from the profile menu, the Settings page, or `?modal=profile`. It needs **`profile_form`** on
+every logged-in page, so supply it from a context processor (an unbound form built from the
+student's profile). Fields:
+
+| Field | Notes |
+| --- | --- |
+| `full_name`, `display_name` | both required |
+| `school`, `program`, `pickup_spot` | choice fields; the dropdowns list their choices. Add a blank choice to `pickup_spot` if it's optional. Give `pickup_spot` the same choices as `Item.location`: the "New post" forms start on the student's saved spot, which only works if it's one of their options |
+| `year_level` | choice field, one button per choice (BS Architecture runs five years, so include a 5th Year). Put the choices on the model field so `get_year_level_display` exists: classmates see "BS Architecture · 3rd Year" |
+| `bio` | shown under the student's name on their items, and in the accept and handoff popups |
+| `bio` | 300 characters max |
+
+On success, redirect to the posted `next` (check it with `url_has_allowed_host_and_scheme`).
+On errors, render `settings.html` with the bound form as `profile_form` and
+`open_modal = "profile"` so the popup reopens showing the errors.
+
+**Password reset**: use Django's built-in views from `django.contrib.auth.views`
+and point them at these templates:
+
+| View | Settings |
+| --- | --- |
+| `PasswordResetView` | `template_name="shelf/password_reset_form.html"`, `email_template_name="shelf/password_reset_email.txt"`, `subject_template_name="shelf/password_reset_subject.txt"` |
+| `PasswordResetDoneView` | `template_name="shelf/password_reset_done.html"` |
+| `PasswordResetConfirmView` | `template_name="shelf/password_reset_confirm.html"` |
+| `PasswordResetCompleteView` | `template_name="shelf/password_reset_complete.html"` |
+
+Keep the URL names above: Django's views redirect to `password_reset_done` and
+`password_reset_complete` by default. Sending the email needs `EMAIL_BACKEND` set
+(the console backend is fine while developing).
+
+**`terms.html`, `privacy.html`**: no context; a `TemplateView` is enough. The text is a
+first draft for the group to review.
+
+**`403.html`, `404.html`, `500.html`**: no context. Django uses them automatically when
+`DEBUG = False`.
+
 ## Edits
 
-- **Colors:** the variables at the top of `shelf/static/shelf/styles.css`.
-- **Font:** Plus Jakarta Sans, loaded in `shelf/templates/shelf/base.html`.
+- **Colors:** the variables at the top of `shareshelf_app/static/shelf/styles.css`.
+- **Font:** Plus Jakarta Sans, loaded in `shareshelf_app/templates/shelf/base.html`.
 - **New icon:** add a `<symbol>` from lucide.dev to `icons.svg`, then use
   `{% icon "name" 16 %}`.

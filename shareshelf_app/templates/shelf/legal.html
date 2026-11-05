@@ -1,0 +1,32 @@
+{% extends "shelf/base.html" %}
+{% load static shelf_tags %}
+{% block body %}
+  <div class="doc-page">
+    <header class="doc-top">
+      <a class="sidebar-brand" href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'login' %}{% endif %}">
+        <img src="{% static 'shelf/logo-mark.svg' %}" alt="" width="28" height="34" />
+        <span>ShareShelf</span>
+      </a>
+      <nav class="segmented doc-switch" aria-label="Policies">
+        {% url 'terms' as terms_url %}{% url 'privacy' as privacy_url %}
+        <a href="{{ terms_url }}" class="{% if request.path == terms_url %}is-active{% endif %}" {% if request.path == terms_url %}aria-current="page"{% endif %}>Terms of Service</a>
+        <a href="{{ privacy_url }}" class="{% if request.path == privacy_url %}is-active{% endif %}" {% if request.path == privacy_url %}aria-current="page"{% endif %}>Privacy Policy</a>
+      </nav>
+    </header>
+
+    <article class="card doc">
+      <p class="eyebrow">{% block eyebrow %}{% endblock %}</p>
+      <h1>{% block heading %}{% endblock %}</h1>
+      <p class="muted">Last updated {% block updated %}November 3, 2026{% endblock %}</p>
+      <div class="doc-body">{% block doc %}{% endblock %}</div>
+    </article>
+
+    <p class="doc-footer">
+      {% if user.is_authenticated %}
+        <a class="link" href="{% url 'dashboard' %}">{% icon "arrow-left" 14 %} Back to ShareShelf</a>
+      {% else %}
+        <a class="link" href="{% url 'signup' %}">{% icon "arrow-left" 14 %} Back to sign up</a>
+      {% endif %}
+    </p>
+  </div>
+{% endblock %}

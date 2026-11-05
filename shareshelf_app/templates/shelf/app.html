@@ -1,0 +1,9 @@
+{% extends "shelf/base.html" %}
+{% block body %}
+  <div class="app-shell">
+    {% include "shelf/partials/sidebar.html" %}
+    <main class="main">{% block content %}{% endblock %}</main>
+    {% block modals %}{% endblock %}
+    {% if profile_form %}{% include "shelf/partials/profile_modal.html" %}{% endif %}
+  </div>
+{% endblock %}

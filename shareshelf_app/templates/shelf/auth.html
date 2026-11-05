@@ -1,0 +1,14 @@
+{% extends "shelf/base.html" %}
+{% load static %}
+{% block body %}
+  <div class="login">
+    {% include "shelf/partials/login_hero.html" %}
+
+    <section class="login-panel">
+      <div class="login-form">
+        <img class="brand-logo" src="{% static 'shelf/ShareShelf_logo.png' %}" alt="ShareShelf — Share, Seek, Support" width="368" height="101" />
+        {% block panel %}{% endblock %}
+      </div>
+    </section>
+  </div>
+{% endblock %}
