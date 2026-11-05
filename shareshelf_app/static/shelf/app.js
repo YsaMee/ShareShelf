@@ -156,70 +156,9 @@ document.querySelectorAll('[data-password-rules]').forEach((rules) => {
   update()
 })
 
-const MAX_AVATAR_BYTES = 2 * 1024 * 1024
-
-document.querySelectorAll('[data-avatar-picker]').forEach((picker) => {
-  const form = picker.closest('form')
-  const input = picker.querySelector('[data-avatar-input]')
-  const preview = picker.querySelector('[data-avatar-preview]')
-  const removeLabel = picker.querySelector('[data-avatar-remove]')
-  const clear = removeLabel.querySelector('input')
-  const error = picker.querySelector('[data-avatar-error]')
-  const initials = picker.querySelector('[data-avatar-initials]').innerHTML.trim()
-  const saved = { html: preview.innerHTML, canRemove: !removeLabel.hidden }
-  let objectUrl = null
-
-  const showImage = (url) => {
-    preview.replaceChildren()
-    if (url) {
-      const img = document.createElement('img')
-      img.src = url
-      img.alt = ''
-      preview.append(img)
-    } else {
-      preview.textContent = initials
-    }
-  }
-  const forgetUpload = () => {
-    if (objectUrl) URL.revokeObjectURL(objectUrl)
-    objectUrl = null
-  }
-  const fail = (message) => {
-    input.value = ''
-    error.textContent = message
-    error.hidden = false
-  }
-
-  input.addEventListener('change', () => {
-    const file = input.files[0]
-    error.hidden = true
-    if (!file) return
-    if (!['image/jpeg', 'image/png'].includes(file.type)) return fail('Please choose a JPG or PNG image.')
-    if (file.size > MAX_AVATAR_BYTES) return fail('That photo is over 2MB. Please choose a smaller one.')
-    forgetUpload()
-    objectUrl = URL.createObjectURL(file)
-    showImage(objectUrl)
-    clear.checked = false
-    removeLabel.hidden = false
-  })
-
-  clear.addEventListener('change', () => {
-    if (!clear.checked) return
-    input.value = ''
-    forgetUpload()
-    showImage(null)
-    error.hidden = true
-    removeLabel.hidden = true
-  })
-
+document.querySelectorAll('[data-profile-form]').forEach((form) => {
   form.addEventListener('reset', () =>
-    setTimeout(() => {
-      forgetUpload()
-      preview.innerHTML = saved.html
-      removeLabel.hidden = !saved.canRemove
-      error.hidden = true
-      form.querySelectorAll('textarea, input').forEach((field) => field.dispatchEvent(new Event('input')))
-    }),
+    setTimeout(() => form.querySelectorAll('textarea').forEach((field) => field.dispatchEvent(new Event('input')))),
   )
 })
 
