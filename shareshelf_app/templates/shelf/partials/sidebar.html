@@ -1,0 +1,48 @@
+{% load static shelf_tags %}
+{% url 'dashboard' as dashboard_url %}{% url 'browse' as browse_url %}{% url 'settings' as settings_url %}
+<aside class="sidebar">
+  <a class="sidebar-brand" href="{{ dashboard_url }}">
+    <img src="{% static 'shelf/logo-mark.svg' %}" alt="" width="28" height="34" />
+    <span>ShareShelf</span>
+  </a>
+
+  <nav class="sidebar-nav">
+    <a class="nav-item {% if request.path == dashboard_url %}is-active{% endif %}" href="{{ dashboard_url }}"
+       {% if request.path == dashboard_url %}aria-current="page"{% endif %}>
+      {% icon "house" 18 1.75 %}<span>Overview</span>
+    </a>
+    <a class="nav-item {% if browse_url in request.path %}is-active{% endif %}" href="{{ browse_url }}"
+       {% if request.path == browse_url %}aria-current="page"{% endif %}>
+      {% icon "layout-grid" 18 1.75 %}<span>Browse items</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <a class="nav-item {% if request.path == settings_url %}is-active{% endif %}" href="{{ settings_url }}"
+       {% if request.path == settings_url %}aria-current="page"{% endif %}>
+      {% icon "settings" 18 1.75 %}<span>Settings</span>
+    </a>
+    <form method="post" action="{% url 'logout' %}">
+      {% csrf_token %}
+      <button class="nav-item" type="submit">{% icon "log-out" 18 1.75 %}<span>Log out</span></button>
+    </form>
+    <div class="profile">
+      {% avatar profile %}
+      <div class="profile-text">
+        <strong>{{ profile.name }}</strong>
+        <span>{{ profile.school }}</span>
+      </div>
+      <details class="menu">
+        <summary class="icon-button" aria-label="Profile menu">{% icon "ellipsis" 18 %}</summary>
+        <div class="menu-list is-up" role="menu">
+          <a href="{{ settings_url }}?modal=profile" data-open="profile" role="menuitem">{% icon "user" 14 %} Edit profile</a>
+          <a href="{{ settings_url }}#password" role="menuitem">{% icon "lock" 14 %} Change password</a>
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" role="menuitem" class="is-danger">{% icon "log-out" 14 %} Log out</button>
+          </form>
+        </div>
+      </details>
+    </div>
+  </div>
+</aside>
