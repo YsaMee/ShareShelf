@@ -12,11 +12,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='userprofile',
-            name='avatar',
-            field=models.ImageField(blank=True, upload_to='avatars/'),
-        ),
-        migrations.AddField(
-            model_name='userprofile',
             name='bio',
             field=models.CharField(blank=True, max_length=300),
         ),

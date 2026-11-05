@@ -7,9 +7,7 @@ class Migration(migrations.Migration):
         ('shareshelf_app', '0003_userprofile_avatar_userprofile_bio_and_more'),
     ]
 
-    operations = [
-        migrations.RemoveField(
-            model_name='userprofile',
-            name='avatar',
-        ),
-    ]
+    # Kept as an empty migration so databases that already recorded 0004
+    # retain a consistent migration history. The avatar field is no longer
+    # created by 0003, so there is nothing to remove here.
+    operations = []
