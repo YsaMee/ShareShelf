@@ -1,4 +1,4 @@
-# ShareShelf backend
+# ShareShelf
 
 ShareShelf is a campus item-sharing app built with Django and SWI-Prolog. Students can list items to give away or lend, browse and request items, arrange handoffs, and track lending returns.
 
