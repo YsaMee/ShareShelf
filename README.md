@@ -14,14 +14,14 @@ ShareShelf is a campus item-sharing app built with Django and SWI-Prolog. Studen
 
 ## Requirements
 
-- A Python version supported by Django 6.1.
+- Python 3.12 or newer (required by Django 6.1).
 - SWI-Prolog, required for matching and request/lending rules. See [docs/prolog.md](docs/prolog.md).
-- A database configured with `DATABASE_URL` (the project uses `dj-database-url` and includes PostgreSQL support).
+- A PostgreSQL database configured with `DATABASE_URL`. Ask a teammate for the team's shared database URL.
 - SMTP credentials for password-reset email.
 
 ## Setup
 
-From the project root, create and activate a virtual environment, then install the Python packages:
+Open PowerShell normally (not as administrator), go to the project folder, then create and activate a virtual environment and install the Python packages:
 
 ```powershell
 py -m venv .venv
@@ -29,7 +29,13 @@ py -m venv .venv
 python -m pip install -r requirements.txt
 ```
 
-Create a `.env` file in the project root. Set values for your own environment; do not commit credentials:
+If activation fails with "running scripts is disabled on this system", allow scripts for your account once, then activate again:
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+```
+
+Create a `.env` file in the project root (for example with `notepad .env`). Set values for your own environment; do not commit credentials:
 
 ```dotenv
 SECRET_KEY=replace-with-a-long-random-secret
@@ -37,6 +43,19 @@ DEBUG=True
 DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/DATABASE
 EMAIL_HOST_USER=your-smtp-account@example.com
 EMAIL_HOST_PASSWORD=your-smtp-password
+```
+
+The database connection requires SSL by default. To use a local PostgreSQL without SSL, add:
+
+```dotenv
+DATABASE_SSL=False
+```
+
+To try the app offline without PostgreSQL, use a local SQLite file instead (it starts empty, not with the team's data):
+
+```dotenv
+DATABASE_URL=sqlite:///db.sqlite3
+DATABASE_SSL=False
 ```
 
 For a local SWI-Prolog install outside the usual locations or system `PATH`, add its full executable path:
@@ -53,6 +72,20 @@ python manage.py runserver
 ```
 
 Open the local address printed by `runserver` in a browser. Django checks for SWI-Prolog at startup; if it cannot find it, install it or configure `SWIPL_PATH`.
+
+Each time you work on the project, open a new PowerShell window in the project folder and run `.venv\Scripts\Activate.ps1` before any `python manage.py` command. After `git pull`, run `python manage.py migrate` in case a teammate changed the database.
+
+### Common problems
+
+| Error | Fix |
+| --- | --- |
+| `fatal: could not create work tree dir ...: Permission denied` | PowerShell is in a protected folder such as `C:\Windows\System32`. Run `cd "$HOME\Documents"` first. |
+| `running scripts is disabled on this system` | Run the `Set-ExecutionPolicy` command above. |
+| `ModuleNotFoundError` | The virtual environment isn't active (no `(.venv)` in the prompt). Run `.venv\Scripts\Activate.ps1`. |
+| `settings.DATABASES is improperly configured` | Django can't read `DATABASE_URL`. Check that the file is named `.env`, not `.env.txt` (`Get-ChildItem -Force -Filter ".env*"`), then restart `runserver`: `.env` is only read at startup. |
+| `shareshelf_app.E001` | SWI-Prolog isn't installed or can't be found. See [docs/prolog.md](docs/prolog.md). |
+
+Never paste a full Django error page into chat or an issue: it shows your `.env` values and anything typed into forms.
 
 ## Project structure
 
