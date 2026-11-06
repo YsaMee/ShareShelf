@@ -70,6 +70,8 @@ class SignUpForm(forms.Form):
 class ShareItemForm(forms.ModelForm):
     """OOP form: validates item input against the Item model."""
 
+    prefix = 'share'
+
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('initial', {'listing': 'give', 'condition': 'Gently Used', 'qty': 1})
         super().__init__(*args, **kwargs)
@@ -94,6 +96,8 @@ class ShareItemForm(forms.ModelForm):
 
 class RequestPostForm(forms.ModelForm):
     """OOP form for posting an item request."""
+
+    prefix = 'request'
 
     needed_by = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
     location = forms.ChoiceField(choices=Item.LOCATION_CHOICES)
