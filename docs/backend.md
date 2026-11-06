@@ -59,7 +59,7 @@ SWI-Prolog must be installed for the app's rules to run. The bridge checks `SWIP
 
 - `shareshelf_app` is in `INSTALLED_APPS`; templates use `APP_DIRS` and the request, auth, messages, and `profile_context` context processors.
 - Database and email connection values are configured in `config/settings.py` and can be supplied through the project `.env` file. Keep secrets out of source control.
-- `MEDIA_ROOT` and `MEDIA_URL` configure uploaded media; `STATICFILES_DIRS` points to the app's static assets.
+- `STATICFILES_DIRS` points to the app's static assets.
 - Run database migrations with `python manage.py migrate`, then start the development server with `python manage.py runserver`.
 - Django runs the SWI-Prolog availability check at startup. Install SWI-Prolog or set `SWIPL_PATH` if it cannot be found.
 

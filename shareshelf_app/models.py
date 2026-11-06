@@ -3,7 +3,6 @@ from types import SimpleNamespace
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.utils import timezone
 
 LOCATION_CHOICES = [
     ('Library', 'Library'), ('Student Lounge', 'Student Lounge'),

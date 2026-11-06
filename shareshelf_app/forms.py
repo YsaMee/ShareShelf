@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from . import logic
-from .models import Item, PROGRAM_CHOICES, Request, UserProfile, LOCATION_CHOICES, YEAR_LEVEL_CHOICES
+from .models import Item, PROGRAM_CHOICES, Request, UserProfile, LOCATION_CHOICES
 
 class LoginForm(forms.Form):
     email = forms.EmailField(
